@@ -1,0 +1,4 @@
+# AV1 - estatística descritiva
+pandas>=2.0
+matplotlib>=3.7
+openpyxl>=3.1   # usado pelo pandas.read_excel para ler o .xlsx
