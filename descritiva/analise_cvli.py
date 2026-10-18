@@ -31,6 +31,15 @@ def tabela_cruzada(var_linha, var_coluna, nome):
     rel_.to_csv(f"saidas/cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
     return abs_, rel_
 
+def grafico_pizza(coluna, titulo, arquivo):
+    contagem = df[coluna].value_counts()
+    fig, ax = plt.subplots(figsize=(6, 6))
+    ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%", startangle=90)
+    ax.set_title(titulo)
+    plt.tight_layout()
+    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.show()
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -46,3 +55,6 @@ for nome, tab in tabelas_freq.items():
     print(f"\n=== {nome} ===\n{tab}")
 
 cruz1_abs,cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
+
+grafico_pizza("Gênero", "Vítimas de CVLI por Gênero (CE, 2009-2025)", "pizza_genero")
+grafico_pizza("Meio Empregado", "Vítimas de CVLI por Meio Empregado (CE, 2009-2025)", "pizza_meio")
