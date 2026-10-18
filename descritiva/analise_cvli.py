@@ -65,6 +65,24 @@ def grafico_linha(serie, titulo, arquivo, xlabel, ylabel, marcador=True, xticks_
     plt.savefig(f"figuras/{arquivo}.pdf")
     plt.show()
 
+def medidas_descritivas(serie):
+    return {
+        "N válido": serie.count(),
+        "Média": serie.mean(),
+        "Mediana": serie.median(),
+        "Moda": serie.mode().tolist(),
+        "Q1 (25%)": serie.quantile(0.25),
+        "Q2 (50%)": serie.quantile(0.5),
+        "Q3 (75%)": serie.quantile(0.75),
+        "P10": serie.quantile(0.1),
+        "P90": serie.quantile(0.9),
+        "Desvio Padrão": serie.std(),
+        "Variância": serie.var(),
+        "Amplitude": serie.max() - serie.min(),
+        "IIQ": serie.quantile(0.75) - serie.quantile(0.25),
+        "Coef. de Variação (%)": (serie.std() / serie.mean()) * 100,
+    }
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -92,3 +110,8 @@ grafico_barras("Escolaridade da Vítima", "Vítimas CVLI por Escolaridade da Ví
 grafico_linha(df.groupby("Ano").size(), "Série anual de CVLI no Ceará (2009-2025)","linha_ano","Ano", "Número de vítimas")
 grafico_linha(df.groupby("AnoMes").size(), "Série mensal de CVLI no Ceará (jan/2009 a dez/2025)","linha_mes","Mês/Ano", "Número de vítimas", marcador=False)
 grafico_linha(df.groupby("Hora_num").size(), "CVLI por Hora do Dia (CE, 2009-2025)","linha_hora","Hora", "Número de vítimas", xticks_inteiros=True)
+
+idade = df["Idade da Vítima"].dropna()
+medidas_idade = medidas_descritivas(idade)
+for chave, valor in medidas_idade.items():
+    print(f"{chave}: {valor}")
