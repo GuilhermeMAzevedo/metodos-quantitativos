@@ -83,6 +83,15 @@ def medidas_descritivas(serie):
         "Coef. de Variação (%)": (serie.std() / serie.mean()) * 100,
     }
 
+def grafico_boxplot(serie, titulo, arquivo, ylabel):
+    fig, ax = plt.subplots(figsize=(5, 6))
+    ax.boxplot(serie, vert=True)
+    ax.set_title(titulo)
+    ax.set_ylabel(ylabel)
+    plt.tight_layout()
+    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.show()
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -115,3 +124,5 @@ idade = df["Idade da Vítima"].dropna()
 medidas_idade = medidas_descritivas(idade)
 for chave, valor in medidas_idade.items():
     print(f"{chave}: {valor}")
+
+grafico_boxplot(idade, "Boxplot da Idade das Vítimas de CVLI (CE, 2009-2025)", "boxplot_idade", "Idade (anos)")
