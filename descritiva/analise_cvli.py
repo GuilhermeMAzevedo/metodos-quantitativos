@@ -40,6 +40,19 @@ def grafico_pizza(coluna, titulo, arquivo):
     plt.savefig(f"figuras/{arquivo}.pdf")
     plt.show()
 
+def grafico_barras(coluna, titulo, arquivo, ylabel, ordem=None):
+    contagem = df[coluna].value_counts()
+    if ordem:
+        contagem = contagem.reindex(ordem)
+    fig, ax = plt.subplots(figsize=(8, 5))
+    contagem.plot(kind="bar", ax=ax, color="#4C72B0")
+    ax.set_title(titulo)
+    ax.set_ylabel(ylabel)
+    plt.xticks(rotation=45, ha="right")
+    plt.tight_layout()
+    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.show()
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -58,3 +71,8 @@ cruz1_abs,cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
 
 grafico_pizza("Gênero", "Vítimas de CVLI por Gênero (CE, 2009-2025)", "pizza_genero")
 grafico_pizza("Meio Empregado", "Vítimas de CVLI por Meio Empregado (CE, 2009-2025)", "pizza_meio")
+
+dias_ordem = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]
+
+grafico_barras("Dia da Semana", "Vítimas CVLI por Dia da Semana (CE, 2009-2025)", "barras_dia", "Número de vítimas", ordem=dias_ordem)
+grafico_barras("Escolaridade da Vítima", "Vítimas CVLI por Escolaridade da Vítima (CE, 2009-2025)", "barras_escolaridade", "Número de vítimas")
