@@ -24,6 +24,13 @@ def tabela_frequencia(coluna, nome):
     tab.to_csv(f"saidas/freq_{nome}.csv", sep=";", encoding="utf-8-sig")
     return tab
 
+def tabela_cruzada(var_linha, var_coluna, nome):
+    abs_ = pd.crosstab(df[var_linha], df[var_coluna])
+    rel_ = (pd.crosstab(df[var_linha], df[var_coluna], normalize="all") * 100).round(2)
+    abs_.to_csv(f"saidas/cruz_{nome}_abs.csv", sep=";", encoding="utf-8-sig")
+    rel_.to_csv(f"saidas/cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
+    return abs_, rel_
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -37,3 +44,5 @@ tabelas_freq = {nome: tabela_frequencia(col, nome) for col, nome in variaveis_fr
 
 for nome, tab in tabelas_freq.items():
     print(f"\n=== {nome} ===\n{tab}")
+
+cruz1_abs,cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
