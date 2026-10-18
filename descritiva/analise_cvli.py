@@ -53,6 +53,18 @@ def grafico_barras(coluna, titulo, arquivo, ylabel, ordem=None):
     plt.savefig(f"figuras/{arquivo}.pdf")
     plt.show()
 
+def grafico_linha(serie, titulo, arquivo, xlabel, ylabel, marcador=True, xticks_inteiros=False):
+    fig, ax = plt.subplots(figsize=(10, 5))
+    serie.plot(marker="o" if marcador else None, ax=ax)
+    ax.set_title(titulo)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    if xticks_inteiros:
+        ax.set_xticks(range(0, 24))
+    plt.tight_layout()
+    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.show()
+
 variaveis_freq = {
     "Natureza":"natureza",
     "Meio Empregado":"meio_empregado",
@@ -76,3 +88,7 @@ dias_ordem = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sáb
 
 grafico_barras("Dia da Semana", "Vítimas CVLI por Dia da Semana (CE, 2009-2025)", "barras_dia", "Número de vítimas", ordem=dias_ordem)
 grafico_barras("Escolaridade da Vítima", "Vítimas CVLI por Escolaridade da Vítima (CE, 2009-2025)", "barras_escolaridade", "Número de vítimas")
+
+grafico_linha(df.groupby("Ano").size(), "Série anual de CVLI no Ceará (2009-2025)","linha_ano","Ano", "Número de vítimas")
+grafico_linha(df.groupby("AnoMes").size(), "Série mensal de CVLI no Ceará (jan/2009 a dez/2025)","linha_mes","Mês/Ano", "Número de vítimas", marcador=False)
+grafico_linha(df.groupby("Hora_num").size(), "CVLI por Hora do Dia (CE, 2009-2025)","linha_hora","Hora", "Número de vítimas", xticks_inteiros=True)
