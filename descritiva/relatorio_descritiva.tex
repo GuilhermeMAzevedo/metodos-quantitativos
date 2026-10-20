@@ -49,7 +49,7 @@
 \begin{titlepage}
 \begin{center}
 
-\includegraphics[width=0.65\textwidth]{../figuras/logo-unifor.png}\\[0.5cm]
+\includegraphics[width=0.65\textwidth]{figuras/logo-unifor.png}\\[0.5cm]
 
 {\large CENTRO DE CIÊNCIAS TECNOLÓGICAS -- CCT}\\[0.3cm]
 {\large Métodos Quantitativos em Computação}\\[0.2cm]
@@ -406,7 +406,7 @@ Entende-se, pela Tabela~\ref{tab:cruzada2}, que a variável escolaridade concent
 \centering
 \caption{Distribuição percentual dos CVLI segundo o gênero da vítima, Ceará, 2009--2025}
 \label{fig:pizza-genero}
-\includegraphics[width=0.6\textwidth]{../figuras/pizza_genero.pdf}
+\includegraphics[width=0.6\textwidth]{figuras/pizza_genero.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -416,7 +416,7 @@ Observa-se, no Gráfico~\ref{fig:pizza-genero}, que o gênero masculino ocupa qu
 \centering
 \caption{Distribuição percentual dos CVLI segundo o meio empregado, Ceará, 2009--2025}
 \label{fig:pizza-meio}
-\includegraphics[width=0.6\textwidth]{../figuras/pizza_meio.pdf}
+\includegraphics[width=0.6\textwidth]{figuras/pizza_meio.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -428,7 +428,7 @@ Conclui-se, a partir do Gráfico~\ref{fig:pizza-meio}, que a arma de fogo domina
 \centering
 \caption{Frequência dos CVLI por dia da semana, Ceará, 2009--2025}
 \label{fig:barra-dia}
-\includegraphics[width=0.8\textwidth]{../figuras/barras_dia.pdf}
+\includegraphics[width=0.8\textwidth]{figuras/barras_dia.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -438,7 +438,7 @@ Entende-se, pelo Gráfico~\ref{fig:barra-dia}, que as barras correspondentes a D
 \centering
 \caption{Frequência das vítimas de CVLI por nível de escolaridade, Ceará, 2009--2025}
 \label{fig:barra-escolaridade}
-\includegraphics[width=0.8\textwidth]{../figuras/barras_escolaridade.pdf}
+\includegraphics[width=0.8\textwidth]{figuras/barras_escolaridade.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -450,7 +450,7 @@ Observa-se, no Gráfico~\ref{fig:barra-escolaridade}, que as barras mais altas c
 \centering
 \caption{Evolução mensal dos CVLI, Ceará, 2009--2025}
 \label{fig:linha-mes}
-\includegraphics[width=0.9\textwidth]{../figuras/linha_mes.pdf}
+\includegraphics[width=0.9\textwidth]{figuras/linha_mes.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -460,7 +460,7 @@ Conclui-se, pelo Gráfico~\ref{fig:linha-mes}, que a série mensal revela sazona
 \centering
 \caption{Evolução anual dos CVLI, Ceará, 2009--2025}
 \label{fig:linha-ano}
-\includegraphics[width=0.9\textwidth]{../figuras/linha_ano.pdf}
+\includegraphics[width=0.9\textwidth]{figuras/linha_ano.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -470,7 +470,7 @@ Entende-se, no Gráfico~\ref{fig:linha-ano}, que os CVLI no Ceará apresentam um
 \centering
 \caption{Distribuição dos CVLI por hora do dia, Ceará, 2009--2025}
 \label{fig:linha-hora}
-\includegraphics[width=0.9\textwidth]{../figuras/linha_hora.pdf}
+\includegraphics[width=0.9\textwidth]{figuras/linha_hora.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborada pelos autores.}
 
@@ -531,7 +531,7 @@ Entende-se, pela Tabela~\ref{tab:dispersao}, que a variável idade apresenta \te
 \centering
 \caption{Boxplot da idade das vítimas de CVLI, Ceará, 2009--2025}
 \label{fig:boxplot}
-\includegraphics[width=0.6\textwidth]{../figuras/boxplot_idade.pdf}
+\includegraphics[width=0.6\textwidth]{figuras/boxplot_idade.pdf}
 \end{figure}
 \fonte{SSPDS/CE (2026). Elaborado pelos autores.}
 
@@ -589,15 +589,22 @@ Por fim, cabe destacar como limitações da base analisada o alto percentual de 
 \label{ap:codigo}
 
 \begin{lstlisting}[style=python,caption={Rotina computacional completa utilizada na análise descritiva},captionpos=b]
-import os
+import sys
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
-os.makedirs("figuras", exist_ok=True)
-os.makedirs("saidas", exist_ok=True)
+sys.stdout.reconfigure(encoding="utf-8")
+
+HERE = Path(__file__).resolve().parent
+DATA = HERE.parent / "data"
+FIG = HERE / "figuras"
+OUT = HERE / "saidas"
+FIG.mkdir(exist_ok=True)
+OUT.mkdir(exist_ok=True)
 plt.rcParams["figure.dpi"] = 120
 
-df = pd.read_excel("CVLI_2009-a-2025.xlsx", sheet_name="CVLI")
+df = pd.read_excel(DATA / "CVLI_2009-a-2025.xlsx", sheet_name="CVLI")
 
 df["Idade da Vítima"] = pd.to_numeric(df["Idade da Vítima"], errors="coerce")
 df["Hora_num"] = pd.to_datetime(df["Hora"], format="%H:%M:%S").dt.hour
@@ -606,117 +613,114 @@ df["Mes"] = df["Data"].dt.month
 df["AnoMes"] = df["Data"].dt.to_period("M")
 
 def tabela_frequencia(coluna, nome):
-    freq = df[coluna].value_counts(dropna=False)
-    perc = ((freq / len(df)) * 100).round(2)
-    tab = pd.DataFrame({"Frequencia": freq, "Percentual (%)": perc})
-    tab.to_csv(f"saidas/freq_{nome}.csv", sep=";", encoding="utf-8-sig")
-    return tab
+freq = df[coluna].value_counts(dropna=False)
+perc = ((freq / len(df)) * 100).round(2)
+tab = pd.DataFrame({"Frequência": freq, "Percentual (%)": perc})
+tab.to_csv(OUT / f"freq_{nome}.csv", sep=";", encoding="utf-8-sig")
+return tab
 
 def tabela_cruzada(var_linha, var_coluna, nome):
-    abs_ = pd.crosstab(df[var_linha], df[var_coluna])
-    rel_ = (pd.crosstab(df[var_linha], df[var_coluna], normalize="all") * 100).round(2)
-    abs_.to_csv(f"saidas/cruz_{nome}_abs.csv", encoding="utf-8-sig")
-    rel_.to_csv(f"saidas/cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
-    return abs_, rel_
+abs_ = pd.crosstab(df[var_linha], df[var_coluna])
+rel_ = (pd.crosstab(df[var_linha], df[var_coluna], normalize="all") * 100).round(2)
+abs_.to_csv(OUT / f"cruz_{nome}_abs.csv", sep=";", encoding="utf-8-sig")
+rel_.to_csv(OUT / f"cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
+return abs_, rel_
 
 def grafico_pizza(coluna, titulo, arquivo):
-    contagem = df[coluna].value_counts()
-    fig, ax = plt.subplots(figsize=(6, 6))
-    ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%", startangle=90)
-    ax.set_title(titulo)
-    plt.tight_layout()
-    plt.savefig(f"../figuras/{arquivo}.pdf", bbox_inches="tight")
-    plt.show()
+contagem = df[coluna].value_counts()
+fig, ax = plt.subplots(figsize=(6, 6))
+ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%", startangle=90)
+ax.set_title(titulo)
+plt.tight_layout()
+plt.savefig(FIG / f"{arquivo}.pdf")
+plt.show()
 
 def grafico_barras(coluna, titulo, arquivo, ylabel, ordem=None):
-    contagem = df[coluna].value_counts()
-    if ordem:
-        contagem = contagem.reindex(ordem)
-    fig, ax = plt.subplots(figsize=(8, 5))
-    contagem.plot(kind="bar", ax=ax, color="#4C72B0")
-    ax.set_title(titulo)
-    ax.set_ylabel(ylabel)
-    plt.xticks(rotation=45, ha="right")
-    plt.tight_layout()
-    plt.savefig(f"../figuras/{arquivo}.pdf", bbox_inches="tight")
-    plt.show()
+contagem = df[coluna].value_counts()
+if ordem:
+contagem = contagem.reindex(ordem)
+fig, ax = plt.subplots(figsize=(8, 5))
+contagem.plot(kind="bar", ax=ax, color="#4C72B0")
+ax.set_title(titulo)
+ax.set_ylabel(ylabel)
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+plt.savefig(FIG / f"{arquivo}.pdf")
+plt.show()
 
 def grafico_linha(serie, titulo, arquivo, xlabel, ylabel, marcador=True, xticks_inteiros=False):
-    fig, ax = plt.subplots(figsize=(10, 5))
-    serie.plot(marker="o" if marcador else None, ax=ax)
-    ax.set_title(titulo)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
-    if xticks_inteiros:
-        ax.set_xticks(range(0, 24))
-    plt.tight_layout()
-    plt.savefig(f"../figuras/{arquivo}.pdf", bbox_inches="tight")
-    plt.show()
-
-def grafico_boxplot(serie, titulo, arquivo, ylabel):
-    fig, ax = plt.subplots(figsize=(5, 6))
-    ax.boxplot(serie, vert=True)
-    ax.set_title(titulo)
-    ax.set_ylabel(ylabel)
-    plt.tight_layout()
-    plt.savefig(f"../figuras/{arquivo}.pdf", bbox_inches="tight")
-    plt.show()
+fig, ax = plt.subplots(figsize=(10, 5))
+serie.plot(marker="o" if marcador else None, ax=ax)
+ax.set_title(titulo)
+ax.set_xlabel(xlabel)
+ax.set_ylabel(ylabel)
+if xticks_inteiros:
+ax.set_xticks(range(0, 24))
+plt.tight_layout()
+plt.savefig(FIG / f"{arquivo}.pdf")
+plt.show()
 
 def medidas_descritivas(serie):
-    return {
-        "N valido": serie.count(),
-        "Media": serie.mean(),
-        "Mediana": serie.median(),
-        "Moda": serie.mode().tolist(),
-        "Q1 (25%)": serie.quantile(0.25),
-        "Q2 (50%)": serie.quantile(0.5),
-        "Q3 (75%)": serie.quantile(0.75),
-        "P10": serie.quantile(0.1),
-        "P90": serie.quantile(0.9),
-        "Desvio Padrao": serie.std(),
-        "Variancia": serie.var(),
-        "Amplitude": serie.max() - serie.min(),
-        "IIQ": serie.quantile(0.75) - serie.quantile(0.25),
-        "Coef. de Variacao (%)": (serie.std() / serie.mean()) * 100,
-    }
+return {
+	"N válido": serie.count(),
+	"Média": serie.mean(),
+	"Mediana": serie.median(),
+	"Moda": serie.mode().tolist(),
+	"Q1 (25%)": serie.quantile(0.25),
+	"Q2 (50%)": serie.quantile(0.5),
+	"Q3 (75%)": serie.quantile(0.75),
+	"P10": serie.quantile(0.1),
+	"P90": serie.quantile(0.9),
+	"Desvio Padrão": serie.std(),
+	"Variância": serie.var(),
+	"Amplitude": serie.max() - serie.min(),
+	"IIQ": serie.quantile(0.75) - serie.quantile(0.25),
+	"Coef. de Variação (%)": (serie.std() / serie.mean()) * 100,
+}
+
+def grafico_boxplot(serie, titulo, arquivo, ylabel):
+fig, ax = plt.subplots(figsize=(5, 6))
+ax.boxplot(serie, vert=True)
+ax.set_title(titulo)
+ax.set_ylabel(ylabel)
+plt.tight_layout()
+plt.savefig(FIG / f"{arquivo}.pdf")
+plt.show()
 
 variaveis_freq = {
-    "Natureza": "natureza",
-    "Meio Empregado": "meio_empregado",
-    "Genero": "genero",
-    "Escolaridade da Vítima": "escolaridade",
-    "Raça da Vítima": "raca",
-    "Dia da Semana": "dia_semana",
+	"Natureza":"natureza",
+	"Meio Empregado":"meio_empregado",
+	"Gênero":"genero",
+	"Escolaridade da Vítima":"escolaridade",
+	"Raça da Vítima":"raca",
+	"Dia da Semana":"dia_semana"
 }
-tabelas_freq = {nome: tabela_frequencia(col, nome) for col, nome in variaveis_freq.items()}
-for nome, tab in tabelas_freq.items():
-    print(f"\n=== {nome} ===\n{tab}")
 
-cruz1_abs, cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
+tabelas_freq = {nome: tabela_frequencia(col, nome) for col, nome in variaveis_freq.items()}
+
+for nome, tab in tabelas_freq.items():
+print(f"\n=== {nome} ===\n{tab}")
+
+cruz1_abs,cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
 
 grafico_pizza("Gênero", "Vítimas de CVLI por Gênero (CE, 2009-2025)", "pizza_genero")
 grafico_pizza("Meio Empregado", "Vítimas de CVLI por Meio Empregado (CE, 2009-2025)", "pizza_meio")
 
 dias_ordem = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"]
-grafico_barras("Dia da Semana", "Vítimas CVLI por Dia da Semana (CE, 2009-2025)",
-               "barras_dia", "Número de vítimas", ordem=dias_ordem)
-grafico_barras("Escolaridade da Vítima", "Vítimas CVLI por Escolaridade da Vítima (CE, 2009-2025)",
-               "barras_escolaridade", "Número de vítimas")
 
-grafico_linha(df.groupby("Ano").size(), "Série anual de CVLI no Ceará (2009-2025)",
-              "linha_ano", "Ano", "Número de vítimas")
-grafico_linha(df.groupby("AnoMes").size(), "Série mensal de CVLI no Ceará (jan/2009 a dez/2025)",
-              "linha_mes", "Mês/Ano", "Número de vítimas", marcador=False)
-grafico_linha(df.groupby("Hora_num").size(), "CVLI por Hora do Dia (CE, 2009-2025)",
-              "linha_hora", "Hora", "Número de vítimas", xticks_inteiros=True)
+grafico_barras("Dia da Semana", "Vítimas CVLI por Dia da Semana (CE, 2009-2025)", "barras_dia", "Número de vítimas", ordem=dias_ordem)
+grafico_barras("Escolaridade da Vítima", "Vítimas CVLI por Escolaridade da Vítima (CE, 2009-2025)", "barras_escolaridade", "Número de vítimas")
+
+grafico_linha(df.groupby("Ano").size(), "Série anual de CVLI no Ceará (2009-2025)","linha_ano","Ano", "Número de vítimas")
+grafico_linha(df.groupby("AnoMes").size(), "Série mensal de CVLI no Ceará (jan/2009 a dez/2025)","linha_mes","Mês/Ano", "Número de vítimas", marcador=False)
+grafico_linha(df.groupby("Hora_num").size(), "CVLI por Hora do Dia (CE, 2009-2025)","linha_hora","Hora", "Número de vítimas", xticks_inteiros=True)
 
 idade = df["Idade da Vítima"].dropna()
 medidas_idade = medidas_descritivas(idade)
 for chave, valor in medidas_idade.items():
-    print(f"{chave}: {valor}")
+print(f"{chave}: {valor}")
 
-grafico_boxplot(idade, "Boxplot da Idade das Vítimas de CVLI (CE, 2009-2025)",
-                "boxplot_idade", "Idade (anos)")
+grafico_boxplot(idade, "Boxplot da Idade das Vítimas de CVLI (CE, 2009-2025)", "boxplot_idade", "Idade (anos)")
 \end{lstlisting}
 
 \end{document}

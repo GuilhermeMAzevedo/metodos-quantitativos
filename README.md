@@ -9,7 +9,7 @@ Trabalhos da disciplina **Métodos Quantitativos em Computação** (Ciência da 
 | Trabalho | Tema | Código | Relatório | Status |
 |---|---|---|---|---|
 | AV1 | Estatística descritiva dos CVLI no Ceará (2009–2025) | [`analise_cvli.py`](descritiva/analise_cvli.py) | [PDF](descritiva/relatorio_descritiva.pdf) | concluído |
-| AV2 | Regressão linear | — | — | em andamento |
+| AV2 | Regressão linear: CVLI por município × população e PIB per capita | — | — | em andamento |
 | AV3 | Estimação e amostragem | — | — | em breve |
 
 ## Resultados
@@ -31,13 +31,12 @@ Inclui séries de frequência, tabelas cruzadas, gráficos de setor, barras e li
 ```
 metodos-quantitativos/
 ├── data/                  # base CVLI e documentação da fonte (SSPDS/CE)
-├── descritiva/        # analise_cvli.py, relatorio_descritiva.pdf
-├── figuras/
+├── descritiva/            # analise_cvli.py, relatorio_descritiva.tex/.pdf, figuras/
 ├── requirements.txt
 └── README.md
 ```
 
-Os demais trabalhos entram em pastas próprias (`av2-regressao/`, `av3-amostragem/`) conforme forem concluídos.
+Os demais trabalhos entram em pastas próprias (`regressao/`, `amostragem/`) conforme forem concluídos.
 
 ## Como executar
 
@@ -50,11 +49,10 @@ venv\Scripts\activate          # Windows
 source venv/bin/activate       # Linux/macOS
 pip install -r requirements.txt
 
-cd descritiva
-python analise_cvli.py
+python descritiva/analise_cvli.py
 ```
 
-O script lê a base em `../data/`, abre os gráficos com `plt.show()` (feche cada janela para continuar) e salva os PDFs em `figuras/` e os CSVs de apoio em `saidas/` (ignorada pelo Git).
+O script usa caminhos relativos ao próprio arquivo (pode ser executado de qualquer pasta), lê a base em `data/`, abre os gráficos com `plt.show()` (feche cada janela para continuar) e salva os PDFs em `descritiva/figuras/` e os CSVs de apoio em `descritiva/saidas/` (ignorada pelo Git).
 
 ### Compilar o relatório
 
@@ -79,4 +77,3 @@ Python · pandas · matplotlib · LaTeX
 ## Autoria
 
 Desenvolvido por [Guilherme Azevedo](https://github.com/GuilhermeMAzevedo).
-
