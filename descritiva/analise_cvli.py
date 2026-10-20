@@ -1,15 +1,19 @@
 import sys
-import os
+from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 
 sys.stdout.reconfigure(encoding="utf-8")
 
-os.makedirs("figuras", exist_ok=True)
-os.makedirs("saidas", exist_ok=True)
+HERE = Path(__file__).resolve().parent
+DATA = HERE.parent / "data"
+FIG = HERE / "figuras"
+OUT = HERE / "saidas"
+FIG.mkdir(exist_ok=True)
+OUT.mkdir(exist_ok=True)
 plt.rcParams["figure.dpi"] = 120
 
-df = pd.read_excel("data/CVLI_2009-a-2025.xlsx", sheet_name="CVLI")
+df = pd.read_excel(DATA / "CVLI_2009-a-2025.xlsx", sheet_name="CVLI")
 
 df["Idade da Vítima"] = pd.to_numeric(df["Idade da Vítima"], errors="coerce")
 df["Hora_num"] = pd.to_datetime(df["Hora"], format="%H:%M:%S").dt.hour
@@ -21,14 +25,14 @@ def tabela_frequencia(coluna, nome):
     freq = df[coluna].value_counts(dropna=False)
     perc = ((freq / len(df)) * 100).round(2)
     tab = pd.DataFrame({"Frequência": freq, "Percentual (%)": perc})
-    tab.to_csv(f"saidas/freq_{nome}.csv", sep=";", encoding="utf-8-sig")
+    tab.to_csv(OUT / f"freq_{nome}.csv", sep=";", encoding="utf-8-sig")
     return tab
 
 def tabela_cruzada(var_linha, var_coluna, nome):
     abs_ = pd.crosstab(df[var_linha], df[var_coluna])
     rel_ = (pd.crosstab(df[var_linha], df[var_coluna], normalize="all") * 100).round(2)
-    abs_.to_csv(f"saidas/cruz_{nome}_abs.csv", sep=";", encoding="utf-8-sig")
-    rel_.to_csv(f"saidas/cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
+    abs_.to_csv(OUT / f"cruz_{nome}_abs.csv", sep=";", encoding="utf-8-sig")
+    rel_.to_csv(OUT / f"cruz_{nome}_rel.csv", sep=";", encoding="utf-8-sig")
     return abs_, rel_
 
 def grafico_pizza(coluna, titulo, arquivo):
@@ -37,7 +41,7 @@ def grafico_pizza(coluna, titulo, arquivo):
     ax.pie(contagem, labels=contagem.index, autopct="%1.1f%%", startangle=90)
     ax.set_title(titulo)
     plt.tight_layout()
-    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.savefig(FIG / f"{arquivo}.pdf")
     plt.show()
 
 def grafico_barras(coluna, titulo, arquivo, ylabel, ordem=None):
@@ -50,7 +54,7 @@ def grafico_barras(coluna, titulo, arquivo, ylabel, ordem=None):
     ax.set_ylabel(ylabel)
     plt.xticks(rotation=45, ha="right")
     plt.tight_layout()
-    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.savefig(FIG / f"{arquivo}.pdf")
     plt.show()
 
 def grafico_linha(serie, titulo, arquivo, xlabel, ylabel, marcador=True, xticks_inteiros=False):
@@ -62,7 +66,7 @@ def grafico_linha(serie, titulo, arquivo, xlabel, ylabel, marcador=True, xticks_
     if xticks_inteiros:
         ax.set_xticks(range(0, 24))
     plt.tight_layout()
-    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.savefig(FIG / f"{arquivo}.pdf")
     plt.show()
 
 def medidas_descritivas(serie):
@@ -89,7 +93,7 @@ def grafico_boxplot(serie, titulo, arquivo, ylabel):
     ax.set_title(titulo)
     ax.set_ylabel(ylabel)
     plt.tight_layout()
-    plt.savefig(f"figuras/{arquivo}.pdf")
+    plt.savefig(FIG / f"{arquivo}.pdf")
     plt.show()
 
 variaveis_freq = {
@@ -107,6 +111,7 @@ for nome, tab in tabelas_freq.items():
     print(f"\n=== {nome} ===\n{tab}")
 
 cruz1_abs,cruz1_rel = tabela_cruzada("Meio Empregado", "Gênero", "meio_genero")
+cruz2_abs,cruz2_rel = tabela_cruzada("Escolaridade da Vítima", "Raça da Vítima", "escolaridade_raca")
 
 grafico_pizza("Gênero", "Vítimas de CVLI por Gênero (CE, 2009-2025)", "pizza_genero")
 grafico_pizza("Meio Empregado", "Vítimas de CVLI por Meio Empregado (CE, 2009-2025)", "pizza_meio")

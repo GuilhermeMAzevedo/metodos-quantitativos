@@ -31,7 +31,8 @@ Inclui séries de frequência, tabelas cruzadas, gráficos de setor, barras e li
 ```
 metodos-quantitativos/
 ├── data/                  # base CVLI e documentação da fonte (SSPDS/CE)
-├── av1-descritiva/        # analise_cvli.py, relatorio_av1.tex/.pdf, figuras/
+├── descritiva/        # analise_cvli.py, relatorio_descritiva.pdf
+├── figuras/
 ├── requirements.txt
 └── README.md
 ```
@@ -49,7 +50,7 @@ venv\Scripts\activate          # Windows
 source venv/bin/activate       # Linux/macOS
 pip install -r requirements.txt
 
-cd av1-descritiva
+cd descritiva
 python analise_cvli.py
 ```
 
@@ -60,9 +61,9 @@ O script lê a base em `../data/`, abre os gráficos com `plt.show()` (feche cad
 Use o Overleaf com o compilador **pdfLaTeX**, ou localmente:
 
 ```bash
-cd av1-descritiva
-pdflatex relatorio_av1.tex
-pdflatex relatorio_av1.tex     # segunda passada para o sumário
+cd descritiva
+pdflatex relatorio_descritiva.tex
+pdflatex relatorio_descritiva.tex     # segunda passada para o sumário
 ```
 
 É preciso uma instalação completa do TeX Live (pacotes `babel` em português, `booktabs`, `multirow`, `makecell`, `listings`, `xurl`).
@@ -79,4 +80,3 @@ Python · pandas · matplotlib · LaTeX
 
 Desenvolvido por [Guilherme Azevedo](https://github.com/GuilhermeMAzevedo).
 
-<!-- Os trabalhos foram feitos em grupo/dupla. Se combinado com os colegas, liste-os aqui. -->
