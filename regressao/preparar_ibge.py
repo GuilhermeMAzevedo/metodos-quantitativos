@@ -127,3 +127,24 @@ def localizar(trecho):
         raise FileNotFoundError(f"Esperava 1 arquivo com '{trecho}' no nome em {RAW}, achei {len(achados)}. "
                                 f"Passe os caminhos como argumentos.")
     return achados[0]
+
+def main():
+    if len(sys.argv) == 3:
+        arq_pop, arq_pib = Path(sys.argv[1]), Path(sys.argv[2])
+    else:
+        arq_pop, arq_pib = localizar("popul"), localizar("pib")
+ 
+    print(f"População: {arq_pop.name}\nPIB:       {arq_pib.name}")
+    pop, pib = ler_populacao(arq_pop), ler_pib(arq_pib)
+    base = unir(pop, pib)
+ 
+    saida = DATA / "ibge_ce.csv"
+    base.to_csv(saida, sep=";", index=False, encoding="utf-8-sig")
+    print(f"\n{len(base)} municípios gravados em {saida}")
+    print(base.head(5).to_string(index=False))
+    print(f"\npopulação: mín {base['populacao'].min():,} | máx {base['populacao'].max():,}".replace(",", "."))
+    print(f"PIB per capita: mín {base['pib_per_capita'].min():.2f} | máx {base['pib_per_capita'].max():.2f}")
+ 
+ 
+if __name__ == "__main__":
+    main()
