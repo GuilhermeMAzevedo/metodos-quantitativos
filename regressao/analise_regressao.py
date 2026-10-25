@@ -108,3 +108,20 @@ def diagnostico_residuos(m, d):
     cook = pd.Series(m.get_influence().cooks_distance[0], index=d.index)
     top = d.loc[cook.nlargest(5).index, ["Município"]].assign(cook=cook.nlargest(5))
     return {"shapiro_W": w, "shapiro_p": p_sw, "breusch_pagan_p": p_bp, "cook_top5": top}
+
+def grafico_residuos(m, arquivo):
+    res = m.resid
+    fig, eixos = plt.subplots(1, 3, figsize=(14, 4))
+    sm.qqplot(res, line="s", ax=eixos[0])
+    eixos[0].set_title("Q-Q dos resíduos")
+    eixos[1].hist(res, bins=20)
+    eixos[1].set_title("Histograma dos resíduos")
+    eixos[2].scatter(m.fittedvalues, res, alpha=0.7)
+    eixos[2].axhline(0, color="gray")
+    eixos[2].set_xlabel("valores ajustados")
+    eixos[2].set_ylabel("resíduos")
+    eixos[2].set_title("Resíduos × ajustados")
+    plt.tight_layout()
+    plt.savefig(FIG / f"{arquivo}.pdf", bbox_inches="tight")
+    plt.show()
+    plt.close()
