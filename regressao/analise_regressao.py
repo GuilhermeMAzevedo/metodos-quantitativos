@@ -135,3 +135,6 @@ def prever(m, populacao, pib_per_capita, usar_log=USAR_LOG):
                      casos_ic_inf=np.expm1(q["obs_ci_lower"]),
                      casos_ic_sup=np.expm1(q["obs_ci_upper"]))
     return q
+
+def salvar_resumo(m, arquivo):
+    (OUT / f"{arquivo}.txt").write_text(m.summary().as_text(), encoding="utf-8")
