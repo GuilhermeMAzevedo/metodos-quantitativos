@@ -119,3 +119,11 @@ def unir(pop, pib):
     if problemas:
         raise ValueError("Problemas na junção:\n- " + "\n- ".join(problemas))
     return base[["municipio", "populacao", "pib_per_capita"]].sort_values("municipio")
+
+def localizar(trecho):
+    achados = [p for p in RAW.iterdir()
+               if p.is_file() and trecho in p.name.lower() and p.suffix.lower() in EXTENSOES]
+    if len(achados) != 1:
+        raise FileNotFoundError(f"Esperava 1 arquivo com '{trecho}' no nome em {RAW}, achei {len(achados)}. "
+                                f"Passe os caminhos como argumentos.")
+    return achados[0]
