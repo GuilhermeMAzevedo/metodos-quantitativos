@@ -100,3 +100,22 @@ def ler_pib(caminho, ano=ANO_PIB, uf=UF):
     sel = dados[(anos == ano) & (ufs == uf)]
     return pd.DataFrame({"municipio": sel.iloc[:, i_mun].astype(str).str.strip().values,
                          "pib_per_capita": sel.iloc[:, i_pib].map(para_numero).values})
+
+def unir(pop, pib):
+    pop = pop.assign(chave=pop["municipio"].map(normalizar))
+    pib = pib.assign(chave=pib["municipio"].map(normalizar))
+    problemas = []
+    if len(pop) != N_MUNICIPIOS:
+        problemas.append(f"população tem {len(pop)} municípios (esperado {N_MUNICIPIOS})")
+    if len(pib) != N_MUNICIPIOS:
+        problemas.append(f"PIB tem {len(pib)} municípios (esperado {N_MUNICIPIOS})")
+    base = pop.merge(pib[["chave", "pib_per_capita"]], on="chave", how="inner", validate="one_to_one")
+    if len(base) != N_MUNICIPIOS:
+        so_pop = sorted(set(pop["chave"]) - set(pib["chave"]))
+        so_pib = sorted(set(pib["chave"]) - set(pop["chave"]))
+        problemas.append(f"{len(base)} casaram; só na população: {so_pop}; só no PIB: {so_pib}")
+    if base["pib_per_capita"].isna().any():
+        problemas.append("há municípios sem PIB per capita: " + str(base.loc[base["pib_per_capita"].isna(), "municipio"].tolist()))
+    if problemas:
+        raise ValueError("Problemas na junção:\n- " + "\n- ".join(problemas))
+    return base[["municipio", "populacao", "pib_per_capita"]].sort_values("municipio")
