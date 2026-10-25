@@ -96,3 +96,7 @@ def ajustar(formula, d):
 def calcular_vif(d, colunas=("x1", "x2")):
     X = sm.add_constant(d[list(colunas)])
     return pd.Series({c: variance_inflation_factor(X.values, i + 1) for i, c in enumerate(colunas)}, name="VIF")
+
+def anova_modelo(m):
+    tabela = sm.stats.anova_lm(m, typ=2)
+    return tabela, m.fvalue, m.f_pvalue
