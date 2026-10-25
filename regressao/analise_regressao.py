@@ -125,3 +125,13 @@ def grafico_residuos(m, arquivo):
     plt.savefig(FIG / f"{arquivo}.pdf", bbox_inches="tight")
     plt.show()
     plt.close()
+
+def prever(m, populacao, pib_per_capita, usar_log=USAR_LOG):
+    novo = pd.DataFrame({"x1": [np.log(populacao) if usar_log else populacao],
+                         "x2": [np.log(pib_per_capita) if usar_log else pib_per_capita]})
+    q = m.get_prediction(novo).summary_frame(alpha=0.05)
+    if usar_log:
+        q = q.assign(casos_previstos=np.expm1(q["mean"]),
+                     casos_ic_inf=np.expm1(q["obs_ci_lower"]),
+                     casos_ic_sup=np.expm1(q["obs_ci_upper"]))
+    return q
