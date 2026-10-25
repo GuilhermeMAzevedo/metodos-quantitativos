@@ -32,3 +32,12 @@ def cvli_por_municipio(anos=ANOS):
          .reset_index())
     y.to_csv(DATA / "cvli_por_municipio.csv", sep=";", index=False, encoding="utf-8-sig")
     return y
+
+def carregar_ibge():
+    ibge = pd.read_csv(DATA / "ibge_ce.csv", sep=None, engine="python", encoding="utf-8-sig")
+    esperadas = {"municipio", "populacao", "pib_per_capita"}
+    faltando = esperadas - set(ibge.columns)
+    if faltando:
+        raise ValueError(f"ibge_ce.csv sem as colunas {sorted(faltando)}; colunas lidas: {list(ibge.columns)}")
+    ibge["municipio"] = ibge["municipio"].astype(str).str.replace(r"\s*-\s*CE\s*$", "", regex=True)
+    return ibge
