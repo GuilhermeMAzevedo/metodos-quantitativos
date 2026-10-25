@@ -50,3 +50,24 @@ def ler_abas(caminho):
     modelo = next((l for l in linhas if re.search(rf"(?:-|\()\s*{UF}\b)", l))), max(linhas, key=len)
     separador = max(len(r) for r in registros)
     return [pd.DataFrame([r + [""] * (largura - len(r)) for r in registros])]
+
+def ler_populacao(caminho):
+    padrao = re.compile(rf"\s*(?:-|\()\s*{UF}\)?\s*$")
+    abas = ler_abas(caminho)
+    for bruto in abas:
+        achou = next(((c, bruto[c].astype(str).str.contains(padrao)) for c in bruto.columns
+                      if bruto[c].astype(str).str.contains(padrao).sum() >= 100), None)
+        if achou:
+            col, mascara = achou
+            break
+    else:
+        raise ValueError(f"Não achei a coluna de municípios (nomes terminando em ' - {UF}' ou ' ({UF})') em {caminho.name}. "
+                         f"Primeiras linhas lidas:\n{abas[0].head(12).to_string()}")
+    linhas =bruto[mascara]
+    municipio = linhas[col].astype(str).str.replace(padrao, "", regex=True).str.strip()
+    numericas = linhas.drop(columns=[col]).apply(lambda c: c.map(para_numero))
+    candidatas = [c for c in numericas.columns
+                  if numericas[c].notna().mean() > 0.9 and numericas[c].nunique() > 1]
+    if not candidatas:
+        raise ValueError(f"Não achei a coluna de população em {caminho.name}.")
+    return pd.DataFrame({"municipio": municipio.values, "populacao":numericas[candidatas[-1]].round().astype("int64").values})
