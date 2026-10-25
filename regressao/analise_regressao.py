@@ -138,3 +138,42 @@ def prever(m, populacao, pib_per_capita, usar_log=USAR_LOG):
 
 def salvar_resumo(m, arquivo):
     (OUT / f"{arquivo}.txt").write_text(m.summary().as_text(), encoding="utf-8")
+
+def main():
+    FIG.mkdir(exist_ok=True)
+    OUT.mkdir(exist_ok=True)
+ 
+    y = cvli_por_municipio()
+    base = unir_bases(y, carregar_ibge())
+    d = preparar_variaveis(base)
+    print(f"{len(d)} municípios; {COL_Y} soma {int(d[COL_Y].sum())}\n")
+ 
+    grafico_dispersao(d, "x1", "dispersao_populacao")
+    grafico_dispersao(d, "x2", "dispersao_pib")
+    print(correlacoes(d).round(4).to_string(index=False), "\n")
+ 
+    simples = ajustar("y ~ x1", d)
+    multiplo = ajustar("y ~ x1 + x2", d)
+    salvar_resumo(simples, "resumo_simples")
+    salvar_resumo(multiplo, "resumo_multiplo")
+    print(simples.summary(), "\n")
+    print(multiplo.summary(), "\n")
+    print(calcular_vif(d).round(3).to_string(), "\n")
+ 
+    tabela, f, p = anova_modelo(multiplo)
+    print(tabela.round(4).to_string())
+    print(f"F global = {f:.2f} (p = {p:.3g})")
+    print("Simples vs múltiplo (F aninhado):")
+    print(sm.stats.anova_lm(simples, multiplo).round(4).to_string(), "\n")
+ 
+    diag = diagnostico_residuos(multiplo, d)
+    print(f"Shapiro-Wilk: W = {diag['shapiro_W']:.4f}, p = {diag['shapiro_p']:.3g}")
+    print(f"Breusch-Pagan: p = {diag['breusch_pagan_p']:.3g}")
+    print("Maiores distâncias de Cook:\n", diag["cook_top5"].round(4).to_string(), "\n")
+    grafico_residuos(multiplo, "residuos_multiplo")
+ 
+    print(prever(multiplo, populacao=100_000, pib_per_capita=d["pib_per_capita"].median()).round(2).to_string())
+ 
+ 
+if __name__ == "__main__":
+    main()
