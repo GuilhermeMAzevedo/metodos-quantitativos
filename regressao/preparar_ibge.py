@@ -39,16 +39,19 @@ def para_numero(valor):
 def ler_abas(caminho):
     if caminho.suffix.lower() in {".xlsx", ".xlsm", ".xls"}:
         return list(pd.read_excel(caminho, header=None, sheet_name=None).values())
+
     texto = None
     for codificacao in ("utf-8-sig", "latin-1"):
         try:
-            texto = caminho.read_text(encoding= codificacao)
+            texto = caminho.read_text(encoding=codificacao)
             break
         except UnicodeDecodeError:
             continue
     linhas = [l for l in texto.splitlines() if l.strip()]
-    modelo = next((l for l in linhas if re.search(rf"(?:-|\()\s*{UF}\b)", l))), max(linhas, key=len)
-    separador = max(len(r) for r in registros)
+    modelo = next((l for l in linhas if re.search(rf"(?:-|\()\s*{UF}\b", l)), max(linhas, key=len))
+    separador = max(";\t,", key=modelo.count)
+    registros = list(csv.reader(linhas, delimiter=separador))
+    largura = max(len(r) for r in registros)
     return [pd.DataFrame([r + [""] * (largura - len(r)) for r in registros])]
 
 def ler_populacao(caminho):
