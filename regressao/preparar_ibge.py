@@ -71,3 +71,32 @@ def ler_populacao(caminho):
     if not candidatas:
         raise ValueError(f"Não achei a coluna de população em {caminho.name}.")
     return pd.DataFrame({"municipio": municipio.values, "populacao":numericas[candidatas[-1]].round().astype("int64").values})
+
+def ler_pib(caminho, ano=ANO_PIB, uf=UF):
+    abas = ler_abas(caminho)
+    for bruto in abas:
+        nomes = bruto.head(40).apply(lambda c: c.map(lambda x: normalizar(str(x))))
+        linha_cab = next((i for i in range(len(nomes)) if (nomes.iloc[i] == "ano").any()), None)
+        if linha_cab is not None:
+            break
+    else:
+        raise ValueError(f"Não achei a linha de cabeçalho (coluna 'Ano') em {caminho.name}. "
+                         f"Primeiras linhas da 1ª aba:\n{abas[0].head(8).to_string()}")
+    cab = [normalizar(str(c)) for c in bruto.iloc[linha_cab]]
+    dados = bruto.iloc[linha_cab + 1:].reset_index(drop=True)
+    def posicao(*partes, exato=False):
+        for i, nome in enumerate(cab):
+            if (nome == partes[0]) if exato else all(p in nome for p in partes):
+                return i
+        raise ValueError(f"Coluna com {partes} não encontrada. Colunas lidas: {cab}")
+ 
+    i_ano = posicao("ano", exato=True)
+    i_uf = posicao("sigla", "unidade da federacao")
+    i_mun = posicao("nome do municipio")
+    i_pib = posicao("per capita")
+ 
+    anos = dados.iloc[:, i_ano].map(para_numero)
+    ufs = dados.iloc[:, i_uf].astype(str).str.strip().str.upper()
+    sel = dados[(anos == ano) & (ufs == uf)]
+    return pd.DataFrame({"municipio": sel.iloc[:, i_mun].astype(str).str.strip().values,
+                         "pib_per_capita": sel.iloc[:, i_pib].map(para_numero).values})
