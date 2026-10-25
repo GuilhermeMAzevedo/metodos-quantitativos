@@ -100,3 +100,11 @@ def calcular_vif(d, colunas=("x1", "x2")):
 def anova_modelo(m):
     tabela = sm.stats.anova_lm(m, typ=2)
     return tabela, m.fvalue, m.f_pvalue
+
+def diagnostico_residuos(m, d):
+    res = m.resid
+    w, p_sw = stats.shapiro(res)
+    _, p_bp, _, _ = het_breuschpagan(res, m.model.exog)
+    cook = pd.Series(m.get_influence().cooks_distance[0], index=d.index)
+    top = d.loc[cook.nlargest(5).index, ["Município"]].assign(cook=cook.nlargest(5))
+    return {"shapiro_W": w, "shapiro_p": p_sw, "breusch_pagan_p": p_bp, "cook_top5": top}
