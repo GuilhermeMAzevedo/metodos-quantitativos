@@ -89,3 +89,6 @@ def correlacoes(d):
         linhas.append({"par": f"{a} × {b}", "pearson_r": r, "p_pearson": p,
                        "spearman_rho": rho, "p_spearman": p_s})
     return pd.DataFrame(linhas)
+
+def ajustar(formula, d):
+    return smf.ols(formula, data=d).fit()
