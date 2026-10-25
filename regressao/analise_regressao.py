@@ -41,3 +41,12 @@ def carregar_ibge():
         raise ValueError(f"ibge_ce.csv sem as colunas {sorted(faltando)}; colunas lidas: {list(ibge.columns)}")
     ibge["municipio"] = ibge["municipio"].astype(str).str.replace(r"\s*-\s*CE\s*$", "", regex=True)
     return ibge
+
+def unir_bases(y, ibge):
+    y = y.assign(chave=y["Município"].map(normalizar))
+    ibge = ibge.assign(chave=ibge["municipio"].map(normalizar)).drop(columns="municipio")
+    base = y.merge(ibge, on="chave", how="left", validate="one_to_one")
+    sem_dado = base[base[["populacao", "pib_per_capita"]].isna().any(axis=1)]["Município"].tolist()
+    if sem_dado:
+        raise ValueError(f"{len(sem_dado)} municípios sem dado do IBGE: {sem_dado}")
+    return base.drop(columns="chave")
