@@ -80,3 +80,12 @@ def grafico_dispersao(d, x, arquivo, destacar="Fortaleza"):
     plt.savefig(FIG / f"{arquivo}.pdf", bbox_inches="tight")
     plt.show()
     plt.close()
+
+def correlacoes(d):
+    linhas = []
+    for a, b in [("x1", "y"), ("x2", "y"), ("x1", "x2")]:
+        r, p = stats.pearsonr(d[a], d[b])
+        rho, p_s = stats.spearmanr(d[a], d[b])
+        linhas.append({"par": f"{a} × {b}", "pearson_r": r, "p_pearson": p,
+                       "spearman_rho": rho, "p_spearman": p_s})
+    return pd.DataFrame(linhas)
