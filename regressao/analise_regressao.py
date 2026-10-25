@@ -50,3 +50,13 @@ def unir_bases(y, ibge):
     if sem_dado:
         raise ValueError(f"{len(sem_dado)} municípios sem dado do IBGE: {sem_dado}")
     return base.drop(columns="chave")
+
+def preparar_variaveis(base, usar_log=USAR_LOG):
+    d = base.copy()
+    if usar_log:
+        d["y"] = np.log1p(d[COL_Y])
+        d["x1"] = np.log(d["populacao"])
+        d["x2"] = np.log(d["pib_per_capita"])
+    else:
+        d["y"], d["x1"], d["x2"] = d[COL_Y], d["populacao"], d["pib_per_capita"]
+    return d
