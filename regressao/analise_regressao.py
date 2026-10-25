@@ -60,3 +60,23 @@ def preparar_variaveis(base, usar_log=USAR_LOG):
     else:
         d["y"], d["x1"], d["x2"] = d[COL_Y], d["populacao"], d["pib_per_capita"]
     return d
+
+def rotulos(usar_log=USAR_LOG):
+    pref = "log " if usar_log else ""
+    return {"y": f"{pref}CVLI {ANOS[0]}-{ANOS[1]}", "x1": f"{pref}população (Censo 2022)",
+            "x2": f"{pref}PIB per capita"}
+
+def grafico_dispersao(d, x, arquivo, destacar="Fortaleza"):
+    nomes = rotulos()
+    fig, ax = plt.subplots(figsize=(6, 5))
+    ax.scatter(d[x], d["y"], alpha=0.7)
+    if destacar in set(d["Município"]):
+        p = d[d["Município"] == destacar].iloc[0]
+        ax.annotate(destacar, (p[x], p["y"]), textcoords="offset points", xytext=(-45, -3))
+    ax.set_xlabel(nomes[x])
+    ax.set_ylabel(nomes["y"])
+    ax.set_title(f"{nomes['y']} × {nomes[x]}")
+    plt.tight_layout()
+    plt.savefig(FIG / f"{arquivo}.pdf", bbox_inches="tight")
+    plt.show()
+    plt.close()
