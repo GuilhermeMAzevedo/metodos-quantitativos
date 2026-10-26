@@ -9,7 +9,7 @@ Trabalhos da disciplina **Métodos Quantitativos em Computação** (Ciência da 
 | Trabalho | Tema | Código | Relatório | Status |
 |---|---|---|---|---|
 | AV1 | Estatística descritiva dos CVLI no Ceará (2009–2025) | [`analise_cvli.py`](descritiva/analise_cvli.py) | [PDF](descritiva/relatorio_descritiva.pdf) | concluído |
-| AV2 | Regressão linear: CVLI por município × população e PIB per capita | — | — | em andamento |
+| AV2 | Regressão linear: CVLI por município × população e PIB per capita | [`analise_regressao.py`](regressao/analise_regressao.py) | — | em andamento |
 | AV3 | Estimação e amostragem | — | — | em breve |
 
 ## Resultados
@@ -26,17 +26,23 @@ Análise de 59.340 registros de CVLI (um por vítima) em 184 municípios, de 200
 
 Inclui séries de frequência, tabelas cruzadas, gráficos de setor, barras e linha, medidas de posição e dispersão e boxplot da idade.
 
+### AV2 — Regressão linear
+
+Em andamento: regressão do total de CVLI por município (2021–2023) em função da população (Censo 2022) e do PIB per capita (IBGE), com diagnóstico de resíduos, ANOVA e previsões.
+
 ## Estrutura
 
 ```
 metodos-quantitativos/
-├── data/                  # base CVLI e documentação da fonte (SSPDS/CE)
+├── data/                  # bases (SSPDS/CE e IBGE) e documentação das fontes
+│   └── raw/               # arquivos brutos do IBGE, sem edição
 ├── descritiva/            # analise_cvli.py, relatorio_descritiva.tex/.pdf, figuras/
+├── regressao/             # analise_regressao.py, preparar_ibge.py, figuras/
 ├── requirements.txt
 └── README.md
 ```
 
-Os demais trabalhos entram em pastas próprias (`regressao/`, `amostragem/`) conforme forem concluídos.
+O trabalho de amostragem entra em `amostragem/` quando for concluído.
 
 ## Como executar
 
@@ -50,9 +56,12 @@ source venv/bin/activate       # Linux/macOS
 pip install -r requirements.txt
 
 python descritiva/analise_cvli.py
+python regressao/analise_regressao.py     # usa data/ibge_ce.csv, que já está no repositório
 ```
 
-O script usa caminhos relativos ao próprio arquivo (pode ser executado de qualquer pasta), lê a base em `data/`, abre os gráficos com `plt.show()` (feche cada janela para continuar) e salva os PDFs em `descritiva/figuras/` e os CSVs de apoio em `descritiva/saidas/` (ignorada pelo Git).
+Os scripts usam caminhos relativos ao próprio arquivo (podem ser executados de qualquer pasta) e leem as bases em `data/`. Eles abrem os gráficos com `plt.show()` (feche cada janela para continuar) e salvam os PDFs em `figuras/` e os arquivos de apoio em `saidas/`, dentro da pasta de cada trabalho. A pasta `saidas/` é ignorada pelo Git.
+
+Para regerar `data/ibge_ce.csv` a partir dos arquivos brutos do IBGE, veja `data/README.md` e execute `python regressao/preparar_ibge.py`.
 
 ### Compilar o relatório
 
@@ -68,11 +77,11 @@ pdflatex relatorio_descritiva.tex     # segunda passada para o sumário
 
 ## Dados
 
-A base é pública. Fonte, colunas e limitações em [`data/README.md`](data/README.md).
+Todas as bases são públicas: CVLI da SSPDS/CE e, no AV2, população e PIB municipais do IBGE. Fontes, colunas e limitações em [`data/README.md`](data/README.md).
 
 ## Tecnologias
 
-Python · pandas · matplotlib · LaTeX
+Python · pandas · matplotlib · statsmodels · SciPy · LaTeX
 
 ## Autoria
 
