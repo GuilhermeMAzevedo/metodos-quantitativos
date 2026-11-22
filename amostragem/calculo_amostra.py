@@ -15,3 +15,16 @@ def tamanho_amostra(margem, p=0.5, confianca=0.95, N=None, deff=1.0):
     if N is not None:
         n0 = n0 / (1 + (n0 - 1) / N)
     return ceil(n0)
+
+
+def ajustar_nao_resposta(n, taxa_resposta):
+    return ceil(n / taxa_resposta)
+
+
+def limites_nao_resposta(p_obs, respondentes, elegiveis):
+    casos = p_obs * respondentes
+    return casos / elegiveis, (casos + elegiveis - respondentes) / elegiveis
+
+
+def populacao_implicita(projecao, p, n, confianca=0.95):
+    return projecao / (p - margem_erro(n, p, confianca))
