@@ -28,3 +28,26 @@ def limites_nao_resposta(p_obs, respondentes, elegiveis):
 
 def populacao_implicita(projecao, p, n, confianca=0.95):
     return projecao / (p - margem_erro(n, p, confianca))
+
+
+if __name__ == "__main__":
+    print("Margens de erro (amostra aleatória simples, 95%, p = 0,5):")
+    for rotulo, n, divulgada in [("Amostra nacional", 2007, 2.0),
+                                 ("Mulheres entrevistadas", 1040, None),
+                                 ("Módulo de autopreenchimento", 793, 3.0)]:
+        calc = 100 * margem_erro(n)
+        texto = f"divulgada {divulgada:.1f}" if divulgada else "sem margem divulgada"
+        print(f"  {rotulo:28} n={n:5}  calculada {calc:.2f} pp  ({texto})")
+
+    for deff in (1.5, 2.0):
+        print(f"Módulo com efeito de desenho {deff}: {100 * margem_erro(793, deff=deff):.2f} pp")
+
+    inf, sup = limites_nao_resposta(0.375, 793, 1040)
+    print(f"Não resposta: {1040 - 793} de 1040 ({100 * (1040 - 793) / 1040:.1f}%)")
+    print(f"Prevalência de 37,5% com limites de pior caso: {100 * inf:.1f}% a {100 * sup:.1f}%")
+
+    N = populacao_implicita(21_458_206, 0.375, 793)
+    print(f"Base populacional implícita nas projeções: {N / 1e6:.1f} milhões")
+
+    n = tamanho_amostra(0.05)
+    print(f"Ceará com ±5 pp: {n} respondentes, {ajustar_nao_resposta(n, 793 / 1040)} mulheres abordadas")
