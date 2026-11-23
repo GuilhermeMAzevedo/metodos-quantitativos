@@ -29,6 +29,39 @@ def limites_nao_resposta(p_obs, respondentes, elegiveis):
 def populacao_implicita(projecao, p, n, confianca=0.95):
     return projecao / (p - margem_erro(n, p, confianca))
 
+def prevalencia_cenario(p_obs, respondentes, elegiveis, razao):
+    nao_resp = elegiveis - respondentes
+    return p_obs * (respondentes + razao * nao_resp) / elegiveis
+
+
+def diferenca_proporcoes(p1, n1, p2, n2, confianca=0.95, deff=1.0):
+    dif = p2 - p1
+    erro_padrao = sqrt(deff * (p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2))
+    margem = z_critico(confianca) * erro_padrao
+    return dif, dif / erro_padrao, (dif - margem, dif + margem)
+
+
+def alocacao_proporcional(n, tamanhos):
+    total = sum(tamanhos.values())
+    cotas = {estrato: n * tam / total for estrato, tam in tamanhos.items()}
+    alocacao = {estrato: int(cota) for estrato, cota in cotas.items()}
+    sobra = n - sum(alocacao.values())
+    for estrato in sorted(cotas, key=lambda e: cotas[e] - alocacao[e], reverse=True)[:sobra]:
+        alocacao[estrato] += 1
+    return alocacao
+
+
+INDICADORES = [
+    ("Qualquer violência", 0.375, 21_458_206),
+    ("Ofensa verbal", 0.314, 17_714_721),
+    ("Batida, empurrão ou chute", 0.169, 8_979_053),
+    ("Perseguição", 0.161, 8_517_096),
+    ("Ofensa sexual", 0.107, 5_381_783),
+    ("Esfaqueamento ou tiro", 0.014, 350_854),
+    ("Qualquer assédio", 0.496, 29_010_850),
+]
+
+ESTRATOS_CE = {"Fortaleza": 2_428_708, "Demais municípios da RMF": 1_477_183, "Interior": 4_889_066}
 
 if __name__ == "__main__":
     print("Margens de erro (amostra aleatória simples, 95%, p = 0,5):")
