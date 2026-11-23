@@ -20,3 +20,17 @@ def test_ajuste_nao_resposta():
 
 def test_limites_nao_resposta():
     assert ca.limites_nao_resposta(0.5, 80, 100) == pytest.approx((0.4, 0.6))
+    
+def test_cenario_igual_ao_observado():
+    assert ca.prevalencia_cenario(0.375, 793, 1040, 1) == pytest.approx(0.375)
+
+
+def test_diferenca_proporcoes():
+    dif, z, (li, ls) = ca.diferenca_proporcoes(0.5, 100, 0.5, 100)
+    assert dif == 0 and z == 0 and li == pytest.approx(-ls)
+
+
+def test_alocacao_soma_n():
+    aloc = ca.alocacao_proporcional(577, ca.ESTRATOS_CE)
+    assert sum(aloc.values()) == 577
+    assert aloc["Fortaleza"] == 159
