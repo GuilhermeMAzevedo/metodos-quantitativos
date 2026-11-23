@@ -1,0 +1,617 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[brazil]{babel}
+\usepackage{indentfirst}
+
+\usepackage[top=3cm,bottom=2cm,left=3cm,right=2cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{mathptmx}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{tabularx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{amsmath,amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xurl}
+
+\captionsetup{font=small,labelsep=endash,justification=centering}
+\captionsetup[table]{position=top}
+\captionsetup[figure]{position=top}
+
+\newcommand{\fonte}[1]{%
+  \vspace{-2mm}
+  \begin{center}\footnotesize Fonte: #1\end{center}
+}
+\newcommand{\fontedados}{elaborada pelos autores com dados de FBSP (2023; 2025).}
+
+\lstdefinestyle{python}{
+  language=Python,
+  basicstyle=\ttfamily\scriptsize,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{teal},
+  numbers=left, numberstyle=\tiny, numbersep=8pt,
+  breaklines=true, frame=single, showstringspaces=false,
+  extendedchars=true,
+  literate=
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {à}{{\`a}}1 {ã}{{\~a}}1 {õ}{{\~o}}1 {Ã}{{\~A}}1 {Õ}{{\~O}}1
+    {ç}{{\c c}}1 {Ç}{{\c C}}1 {ê}{{\^e}}1 {â}{{\^a}}1 {ô}{{\^o}}1
+    {ª}{{\textsuperscript{a}}}1 {×}{{$\times$}}1 {±}{{$\pm$}}1
+}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+
+\includegraphics[width=0.65\textwidth]{figuras/logo-unifor.png}\\[0.5cm]
+
+{\large CENTRO DE CIÊNCIAS TECNOLÓGICAS -- CCT}\\[0.3cm]
+{\large Métodos Quantitativos em Computação}\\[0.2cm]
+{\normalsize Professor Cledinaldo Castro Araújo}
+
+\vfill
+
+{\Huge \textbf{Estimação e Amostragem}}\\[0.6cm]
+{\Large Análise crítica da metodologia amostral da pesquisa\\
+\textit{Visível e Invisível: a vitimização de mulheres no Brasil}\\
+(FBSP/Datafolha, 5ª edição, 2025)}
+
+\vfill
+
+{\large \textbf{Alunos:}}\\[0.2cm]
+{\large Matheus Cruz --- Matrícula: 2517389}\\[0.1cm]
+{\large Guilherme Azevedo --- Matrícula: 2510423}\\[0.1cm]
+{\large Samuel Lopes --- Matrícula: 2510371}\\[0.1cm]
+{\large Enzo Fernandes --- Matrícula: 2510425}\\[0.1cm]
+{\large Rodrigo Temporal --- Matrícula: 2510402}
+
+\vfill
+
+{\large Fortaleza, Dezembro de 2026}
+
+\end{center}
+\end{titlepage}
+
+\renewcommand{\contentsname}{Sumário}
+\tableofcontents
+\newpage
+
+\section{Introdução}
+
+A violência contra a mulher é um fenômeno que os registros oficiais captam apenas em parte. Os boletins de ocorrência dependem de a vítima procurar a polícia, e os dados de mortes violentas mostram somente o desfecho mais extremo. No Ceará, a base de Crimes Violentos Letais Intencionais (CVLI) da Secretaria da Segurança Pública e Defesa Social (SSPDS/CE), analisada no primeiro trabalho da disciplina, registra 304 mulheres vítimas de CVLI em 2025, das quais 47 em ocorrências classificadas como feminicídio, contra 29 em 2022. Já os registros de violência contra a mulher que chegam às delegacias somaram 6.189 vítimas apenas no primeiro trimestre de 2025, uma média de 68 por dia (DIÁRIO DO NORDESTE, 2025). Mesmo esse número não mostra quantas mulheres sofreram violência e não procuraram nenhum órgão público.
+
+Para medir essa parte que não aparece nos registros, o Fórum Brasileiro de Segurança Pública (FBSP) e o Instituto Datafolha realizam, desde 2017, a pesquisa \textit{Visível e Invisível: a vitimização de mulheres no Brasil}. Trata-se de uma pesquisa de vitimização: em vez de contar ocorrências registradas, ela pergunta diretamente a uma amostra de mulheres se sofreram violência nos últimos 12 meses. A 5ª edição, divulgada em março de 2025, estimou que 37,5\% das brasileiras com 16 anos ou mais sofreram algum tipo de violência no período, o equivalente a cerca de 21,4 milhões de mulheres, o maior percentual da série histórica (FBSP, 2025; O POVO, 2025). A mesma edição indica que 47,4\% das vítimas não fizeram nada após a agressão mais grave e que apenas 25,7\% procuraram um órgão oficial, o que confirma a distância entre a violência sofrida e a violência registrada.
+
+Esses números circulam na imprensa e no debate público como retratos da população feminina do país, mas foram obtidos a partir de 793 questionários respondidos. O problema que este trabalho investiga é, portanto, de natureza amostral: \textbf{em que medida o desenho da amostra da pesquisa sustenta as estimativas e as projeções populacionais que ela divulga?} Para respondê-lo, o grupo caracteriza a população-alvo, identifica o tipo de amostragem, recalcula as margens de erro e as projeções a partir das fórmulas da disciplina e avalia os vieses que o desenho pode introduzir. Os cálculos foram feitos em Python e estão nos Anexos.
+
+\newpage
+
+\section{Objetivos}
+
+\subsection{Objetivo Geral}
+
+Analisar criticamente os procedimentos de amostragem e de estimação da pesquisa \textit{Visível e Invisível} (5ª edição, 2025), avaliando se o desenho amostral adotado sustenta as prevalências e as projeções populacionais divulgadas.
+
+\subsection{Objetivos Específicos}
+
+\begin{itemize}
+    \item Caracterizar a população-alvo da pesquisa, identificando seu tamanho, estratos e conglomerados;
+    \item Identificar o tipo de amostragem empregado e discutir a justificativa dessa escolha;
+    \item Avaliar o tamanho da amostra, recalculando as margens de erro divulgadas sob diferentes hipóteses de nível de confiança e de efeito do plano amostral;
+    \item Reconstruir o método usado nas projeções em número de mulheres e verificar sua coerência com as margens declaradas;
+    \item Medir o efeito potencial da não resposta ao módulo de autopreenchimento sobre a prevalência estimada;
+    \item Analisar a adequação metodológica da pesquisa, incluindo a forma de abordagem e o tipo de pergunta (estimulada ou espontânea), e propor melhorias, entre elas um plano amostral para uma leitura do Ceará.
+\end{itemize}
+
+\newpage
+
+\section{Justificativa}
+
+\textbf{Importância do tema.} A violência contra a mulher cresce nos registros do Ceará. Os feminicídios contabilizados pela SSPDS/CE passaram de 29 em 2022 para 47 em 2025, e o boletim \textit{Elas Vivem}, da Rede de Observatórios da Segurança, registrou 207 casos de violência contra a mulher no estado em 2024, o maior número desde 2020 (O POVO, 2025b). Cada uma dessas fontes, porém, mede algo diferente: o boletim monitora casos noticiados pela imprensa, a SSPDS conta ocorrências registradas e a \textit{Visível e Invisível} estima a vitimização na população. Entender como cada número é produzido é condição para interpretá-lo.
+
+\textbf{Aplicabilidade prática.} Pesquisas de vitimização são a principal fonte para estimar a subnotificação e orientar políticas públicas, como a distribuição de delegacias especializadas e de equipamentos de acolhimento. Uma projeção de 21,4 milhões de vítimas tem peso político muito diferente de uma de 18 milhões ou de 25 milhões; por isso, a margem de erro e o método da projeção não são detalhes técnicos, mas parte do resultado.
+
+\textbf{Relevância da amostragem.} A qualidade de uma estimativa depende menos do tamanho da amostra do que de como ela é selecionada. Uma amostra de 2.007 pessoas pode representar bem o Brasil se cada pessoa da população tiver uma probabilidade conhecida de ser escolhida, e pode representá-lo mal se determinados grupos tiverem menor chance de serem abordados ou de responderem. Em temas sensíveis, como a violência doméstica, os grupos com menor chance de participação podem ser justamente os mais afetados. Analisar o desenho amostral de uma pesquisa amplamente citada permite aplicar os conceitos da disciplina a um caso real, com consequências concretas.
+
+\newpage
+
+\section{Metodologia}
+
+\subsection{Natureza do estudo, fonte da pesquisa e dos dados}
+
+Este trabalho é uma análise metodológica de uma pesquisa já publicada (Modalidade 2), de abordagem quantitativa e baseada em dados secundários. A pesquisa analisada é a 5ª edição de \textit{Visível e Invisível: a vitimização de mulheres no Brasil}, realizada pelo Fórum Brasileiro de Segurança Pública em parceria com o Instituto Datafolha. As informações foram extraídas do sumário executivo da 5ª edição (FBSP, 2025), que traz a ficha técnica, as prevalências e as projeções em número de mulheres. Para a comparação com a edição anterior, foi usado o infográfico da 4ª edição (FBSP, 2023). Os microdados da pesquisa (as respostas individuais) não são públicos; por isso, toda a análise parte dos números agregados divulgados. A Tabela~\ref{tab:ficha} resume a ficha técnica das duas edições.
+
+\begin{table}[H]
+\centering
+\caption{Ficha técnica das duas últimas edições da pesquisa}
+\label{tab:ficha}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Item} & \textbf{4ª edição (2023)} & \textbf{5ª edição (2025)} \\
+\midrule
+Tipo de pesquisa & \multicolumn{2}{c}{Quantitativa, abordagem pessoal em pontos de fluxo} \\
+Universo & \multicolumn{2}{c}{População brasileira com 16 anos ou mais} \\
+Municípios & 126 & 126 \\
+Período de campo & 9 a 13 jan. 2023 & 10 a 14 fev. 2025 \\
+Entrevistas (total) & 2.017 & 2.007 \\
+Mulheres entrevistadas & 1.042 & 1.040 \\
+Mulheres que responderam ao módulo & 818 & 793 \\
+Margem de erro (amostra total) & $\pm$2,0 pp & $\pm$2,0 pp \\
+Margem de erro (módulo) & $\pm$3,0 pp & $\pm$3,0 pp \\
+Nível de confiança & não informado & não informado \\
+Período de referência & \multicolumn{2}{c}{12 meses anteriores à entrevista} \\
+\bottomrule
+\end{tabular}
+\fonte{\fontedados}
+\end{table}
+
+\subsection{Caracterização da população}
+
+\textbf{População-alvo.} A pesquisa tem dois níveis. O questionário geral, de cerca de 20 minutos, é aplicado à população brasileira com 16 anos ou mais, de todas as classes sociais, em capitais, regiões metropolitanas e cidades do interior. As perguntas sobre vitimização, que geram as estatísticas centrais, são feitas apenas às mulheres, em um módulo de autopreenchimento em \textit{tablet}. A população-alvo dos principais resultados é, portanto, a de \textbf{mulheres com 16 anos ou mais residentes no Brasil}.
+
+\textbf{Tamanho da população.} A FBSP não informa o tamanho da população usado para converter percentuais em número de mulheres. Na Seção~\ref{sec:projecoes}, esse valor é reconstruído a partir das próprias projeções divulgadas: cerca de 62,9 milhões de mulheres.
+
+\textbf{Estratos.} A ficha técnica não descreve estratos formais. A distribuição dos 126 municípios entre municípios pequenos, médios e grandes de todas as regiões, característica do procedimento do Datafolha, funciona como uma estratificação implícita por região e porte de município.
+
+\textbf{Conglomerados.} Os municípios e os pontos de fluxo dentro deles são conglomerados: o instituto sorteia municípios e, dentro deles, bairros e pontos de abordagem, e as entrevistas se concentram nesses locais (ACESSA; FOLHAPRESS, 2026).
+
+\subsection{Tipo de amostragem}
+
+A amostra é selecionada em múltiplos estágios. Segundo a descrição do procedimento padrão do Datafolha (ACESSA; FOLHAPRESS, 2026), que é o mesmo utilizado nesta pesquisa (abordagem em pontos de fluxo):
+
+\begin{enumerate}
+    \item \textbf{Sorteio de municípios} de pequeno, médio e grande porte em todas as regiões (126 nesta edição);
+    \item \textbf{Sorteio de bairros e pontos de fluxo} dentro de cada município;
+    \item \textbf{Seleção dos entrevistados por cotas} de sexo e idade, proporcionais às distribuições do IBGE, com acompanhamento de escolaridade, renda e ocupação.
+\end{enumerate}
+
+Os dois primeiros estágios são probabilísticos, mas o terceiro não é: dentro de cada ponto, o entrevistador aborda quem passa até completar as cotas, e a probabilidade de seleção de cada pessoa é desconhecida. O desenho é, assim, uma \textbf{amostragem mista}, probabilística por conglomerados nos estágios iniciais e \textbf{não probabilística por cotas} no estágio final. Há ainda um quarto filtro, específico do módulo: das 1.040 mulheres entrevistadas, 793 aceitaram responder ao questionário de autopreenchimento.
+
+\textbf{Justificativa da escolha.} O instituto não justifica a escolha na ficha técnica, mas as vantagens do método são conhecidas: a abordagem em pontos de fluxo permite entrevistar duas mil pessoas em 126 municípios em apenas cinco dias, com custo muito menor que uma amostra domiciliar, e as cotas garantem que a composição por sexo e idade reproduza a da população. O custo é perder a base probabilística que justifica, em rigor, o cálculo da margem de erro (ver Seção~\ref{sec:adequacao}).
+
+\subsection{Determinação do tamanho da amostra}
+
+A ficha técnica informa apenas os tamanhos e as margens. A Tabela~\ref{tab:parametros} reúne os parâmetros que o cálculo do tamanho da amostra exige e indica o que é declarado e o que precisou ser inferido.
+
+\begin{table}[H]
+\centering
+\caption{Parâmetros do tamanho da amostra: declarados e inferidos}
+\label{tab:parametros}
+\small
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Parâmetro} & \textbf{Situação na pesquisa} \\
+\midrule
+Nível de confiança & Não informado. As projeções só são reproduzidas com 95\% ($z = 1{,}96$), como mostra a Seção~\ref{sec:projecoes}. \\
+Margem de erro & Declarada: $\pm$2,0 pp (amostra total) e $\pm$3,0 pp (módulo). \\
+Variabilidade & Não informada. O padrão para margens declaradas é a variabilidade máxima, $p = 0{,}5$. \\
+Fórmula & Não informada. As margens são compatíveis com a fórmula da amostra aleatória simples (AAS), sem efeito do plano amostral. \\
+Taxa de resposta & Não comentada; calculável: 793/1.040 = 76,2\% no módulo. \\
+\bottomrule
+\end{tabularx}
+\fonte{\fontedados}
+\end{table}
+
+\subsection{Procedimentos de análise e ferramentas}
+
+A análise seguiu cinco etapas, cada uma implementada como uma função do script do Anexo A (\texttt{calculo\_amostra.py}):
+
+\begin{enumerate}
+    \item Recalcular as margens de erro das três amostras (total, mulheres e módulo) pela fórmula da AAS e com efeitos do plano amostral de 1,5 e 2,0;
+    \item Reconstruir a base populacional implícita em cada projeção divulgada, testando duas hipóteses sobre a margem usada;
+    \item Calcular os limites de pior caso e cenários intermediários para a não resposta ao módulo;
+    \item Testar se a variação da prevalência entre 2023 e 2025 é estatisticamente significativa;
+    \item Dimensionar uma amostra estratificada para uma leitura do Ceará.
+\end{enumerate}
+
+A análise foi feita em \textbf{Python 3.15}, usando apenas a biblioteca padrão: \texttt{math} para as contas e \texttt{statistics.NormalDist} para os valores críticos da distribuição normal. As funções são verificadas por testes automatizados com \texttt{pytest} (Anexo B). O código completo está nos Anexos e no repositório do projeto.
+
+\newpage
+
+\section{Referencial Teórico}
+
+\subsection{População e amostra}
+
+População é o conjunto de todos os elementos que possuem a característica de interesse; amostra é o subconjunto efetivamente observado (BUSSAB; MORETTIN, 2017). A amostragem existe porque observar toda a população costuma ser caro, demorado ou impossível. O objetivo é estimar um parâmetro da população, como a proporção $P$ de mulheres que sofreram violência, por meio de uma estatística da amostra, a proporção amostral $\hat{p}$. É preciso distinguir ainda a \textit{população-alvo}, sobre a qual se quer concluir, da \textit{população de referência} ou \textit{cadastro}, que é a parte da população que efetivamente pode ser selecionada. Quando as duas não coincidem, ocorre erro de cobertura (GROVES \textit{et al.}, 2009).
+
+\subsection{Técnicas de amostragem}
+
+Na \textbf{amostragem probabilística}, cada elemento tem probabilidade conhecida e não nula de seleção, o que permite medir o erro amostral (COCHRAN, 1977; BOLFARINE; BUSSAB, 2005):
+
+\begin{itemize}
+    \item \textbf{Aleatória simples (AAS):} todas as amostras de tamanho $n$ têm a mesma probabilidade;
+    \item \textbf{Estratificada:} a população é dividida em grupos homogêneos (estratos) e sorteia-se uma amostra em cada um; reduz a variância quando os estratos diferem entre si;
+    \item \textbf{Por conglomerados:} sorteiam-se grupos (municípios, bairros, quarteirões) e entrevistam-se elementos dentro deles; reduz custos, mas aumenta a variância, porque pessoas de um mesmo local tendem a ser parecidas;
+    \item \textbf{Em múltiplos estágios:} combina as anteriores, sorteando unidades sucessivamente menores.
+\end{itemize}
+
+Na \textbf{amostragem não probabilística}, a seleção depende de critérios do pesquisador ou da disponibilidade dos elementos: por \textbf{cotas} (preenchem-se proporções fixas de certos grupos, mas a escolha das pessoas dentro de cada cota é livre), por \textbf{conveniência} (quem está acessível) e \textbf{bola de neve} (os participantes indicam outros). Nessas técnicas, a probabilidade de seleção é desconhecida e o erro amostral não pode ser calculado em rigor.
+
+\subsection{Representatividade}
+
+Uma amostra é representativa quando reproduz, dentro de uma margem conhecida, a distribuição das características relevantes da população. As cotas garantem representatividade nas variáveis controladas (sexo e idade, por exemplo), mas não nas demais: se a probabilidade de ser abordado em um ponto de fluxo estiver associada à variável de interesse, a amostra pode ter a idade e o sexo corretos e, ainda assim, estimar mal a prevalência de violência.
+
+\subsection{Margem de erro e nível de confiança}
+
+Para uma proporção estimada em uma AAS de tamanho $n$, o intervalo de confiança é $\hat{p} \pm e$, com margem de erro
+\begin{equation}
+e = z_{\alpha/2}\,\sqrt{\frac{\hat{p}(1-\hat{p})}{n}},
+\label{eq:margem}
+\end{equation}
+em que $z_{\alpha/2}$ é o valor crítico da distribuição normal para o nível de confiança $1-\alpha$ ($z = 1{,}645$ para 90\%, $1{,}96$ para 95\% e $2{,}576$ para 99\%). O nível de confiança é a proporção de intervalos que conteriam o parâmetro se a pesquisa fosse repetida muitas vezes com o mesmo desenho. A margem é máxima quando $\hat{p} = 0{,}5$, por isso as pesquisas costumam divulgar esse valor como margem geral.
+
+\subsection{Tamanho da amostra}
+
+Invertendo a Equação~\eqref{eq:margem}, o tamanho necessário para uma margem $e$ é
+\begin{equation}
+n_0 = \frac{z_{\alpha/2}^2\, p(1-p)}{e^2}.
+\label{eq:tamanho}
+\end{equation}
+Quando a população tem tamanho $N$ conhecido e não muito maior que $n_0$, aplica-se a correção para população finita, $n = n_0 / \left[1 + (n_0 - 1)/N\right]$. Para populações de milhões de pessoas, a correção é desprezível. Se uma fração dos selecionados não responde, o número de pessoas a abordar é $n/\text{TR}$, em que TR é a taxa de resposta esperada.
+
+\subsection{Efeito do plano amostral}
+
+As fórmulas anteriores valem para a AAS. Em desenhos com conglomerados, a variância do estimador é maior. Kish (1965) definiu o \textbf{efeito do plano amostral} (\textit{design effect}, deff) como a razão entre a variância do estimador no desenho real e na AAS de mesmo tamanho. A margem de erro corrigida é $e\sqrt{\text{deff}}$, e o tamanho necessário é multiplicado por deff. Em pesquisas nacionais com conglomerados, valores entre 1,5 e 2,0 são comuns.
+
+\subsection{Comparação de duas proporções}
+
+Para verificar se duas proporções obtidas em amostras independentes diferem significativamente, usa-se a estatística
+\begin{equation}
+z = \frac{\hat{p}_2 - \hat{p}_1}{\sqrt{\text{deff}\left[\frac{\hat{p}_1(1-\hat{p}_1)}{n_1} + \frac{\hat{p}_2(1-\hat{p}_2)}{n_2}\right]}},
+\label{eq:dif}
+\end{equation}
+e a diferença é significativa a 5\% quando $|z| > 1{,}96$.
+
+\subsection{Vieses amostrais}
+
+Além do erro amostral, que diminui com o aumento de $n$, uma pesquisa está sujeita a erros que não diminuem com o tamanho da amostra (GROVES \textit{et al.}, 2009):
+
+\begin{itemize}
+    \item \textbf{Viés de cobertura:} parte da população-alvo não tem chance de ser selecionada;
+    \item \textbf{Viés de seleção:} a probabilidade de seleção varia de forma associada à variável de interesse;
+    \item \textbf{Viés de não resposta:} quem não responde difere de quem responde. Sem informação sobre os não respondentes, o efeito pode ser limitado no pior caso supondo que nenhum ou todos eles têm o atributo;
+    \item \textbf{Viés de mensuração:} as respostas diferem da realidade, por exemplo por desejabilidade social, que leva a omitir comportamentos estigmatizados. Em perguntas sensíveis, o autopreenchimento reduz esse viés (TOURANGEAU; YAN, 2007);
+    \item \textbf{Viés de memória:} em perguntas sobre os últimos 12 meses, o entrevistado pode esquecer eventos ou incluir eventos anteriores ao período (efeito telescópio).
+\end{itemize}
+
+\subsection{Formas de abordagem: perguntas estimuladas e espontâneas}
+
+Na pergunta \textbf{espontânea} (ou não estimulada), o entrevistado responde livremente, sem opções. Na \textbf{estimulada}, recebe uma lista de alternativas. A pergunta estimulada facilita a lembrança e padroniza as categorias, mas pode induzir respostas; a espontânea mede o que é mais saliente para o entrevistado, mas tende a subestimar o que ele não associa à pergunta. Quando a pergunta é de \textbf{resposta múltipla}, a soma dos percentuais pode passar de 100\%.
+
+\newpage
+
+\section{Desenvolvimento}
+
+\subsection{Descrição da população-alvo}
+
+A população-alvo das estatísticas de vitimização são as mulheres com 16 anos ou mais residentes no Brasil. A escolha do limite de 16 anos acompanha a idade mínima do eleitorado e o padrão das pesquisas do Datafolha, mas deixa de fora meninas e adolescentes mais novas, que exigiriam uma pesquisa com outro desenho e outros cuidados éticos. A população de referência, porém, é mais estreita: só podem ser selecionadas as mulheres que circulam pelos pontos de fluxo sorteados durante os cinco dias de campo e que aceitam responder ao módulo.
+
+Essa diferença importa porque a pesquisa mostra que a violência ocorre principalmente em casa (57\% dos casos mais graves) e que os principais autores são o parceiro atual (40,0\%) ou o ex-parceiro (26,8\%) (FBSP, 2025). Mulheres sob controle do parceiro, com restrição de circulação, idosas, com deficiência ou residentes em áreas rurais isoladas têm menor probabilidade de estar em um ponto de fluxo, e algumas delas podem estar justamente entre as vítimas mais graves.
+
+\subsection{Adequação da técnica de amostragem}
+\label{sec:adequacao}
+
+O desenho misto da pesquisa tem pontos fortes claros. O sorteio de municípios e de pontos impede que o instituto escolha locais convenientes, a dispersão em 126 municípios reduz a concentração da amostra e as cotas de sexo e idade reproduzem a estrutura demográfica. Para uma pesquisa nacional de cinco dias, é uma solução eficiente e de custo compatível com uma série bienal.
+
+O problema está no último estágio. Como os entrevistados dentro de cada ponto não são sorteados, a probabilidade de seleção de cada mulher é desconhecida, e a fórmula da margem de erro, que pressupõe seleção aleatória, passa a ser uma aproximação. Na prática, isso significa que o $\pm$3,0 pp divulgado mede apenas a variação aleatória que uma AAS do mesmo tamanho teria; ele não incorpora o efeito dos conglomerados (deff) nem os vieses de cobertura e de seleção descritos acima.
+
+\subsection{Análise do tamanho da amostra e das margens de erro}
+
+A Tabela~\ref{tab:margens} compara as margens divulgadas com as calculadas pela Equação~\eqref{eq:margem}, com 95\% de confiança e $p = 0{,}5$.
+
+\begin{table}[H]
+\centering
+\caption{Margens de erro divulgadas e recalculadas (95\% de confiança, $p = 0{,}5$)}
+\label{tab:margens}
+\small
+\begin{tabular}{lrccc}
+\toprule
+\textbf{Amostra} & \textbf{$n$} & \textbf{Divulgada} & \textbf{AAS} & \textbf{\makecell{AAS com\\deff = 2,0}} \\
+\midrule
+Amostra total & 2.007 & $\pm$2,0 pp & $\pm$2,19 pp & $\pm$3,09 pp \\
+Mulheres entrevistadas & 1.040 & --- & $\pm$3,04 pp & $\pm$4,30 pp \\
+Módulo de autopreenchimento & 793 & $\pm$3,0 pp & $\pm$3,48 pp & $\pm$4,92 pp \\
+\bottomrule
+\end{tabular}
+\fonte{\fontedados}
+\end{table}
+
+Duas inconsistências aparecem. A primeira é que nenhuma das margens declaradas corresponde à amostra a que se refere. Com 2.007 entrevistas, a margem da AAS a 95\% é de 2,19 pp; para chegar a 2,0 pp seriam necessárias 2.401 entrevistas, ou um nível de confiança de cerca de 93\%. A segunda, mais relevante, é que a margem de $\pm$3,0 pp atribuída ao módulo coincide com a margem das 1.040 mulheres entrevistadas, e não com a das 793 que de fato responderam às perguntas de vitimização, cuja margem é de $\pm$3,48 pp. Como todas as prevalências de violência vêm do módulo, a margem divulgada subestima o erro amostral dos resultados principais.
+
+Ao considerar o efeito dos conglomerados, a diferença cresce: com deff de 1,5, a margem do módulo vai a $\pm$4,26 pp, e com deff de 2,0, a $\pm$4,92 pp. A Figura~\ref{fig:margem} mostra como a margem cai com o tamanho da amostra em cada hipótese e onde ficam as margens divulgadas.
+
+\begin{figure}[H]
+\centering
+\caption{Margem de erro em função do tamanho da amostra (95\% de confiança, $p = 0{,}5$)}
+\label{fig:margem}
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.92\textwidth, height=7.5cm,
+    xlabel={Tamanho da amostra ($n$)}, ylabel={Margem de erro (pp)},
+    xmin=400, xmax=2400, ymin=1.5, ymax=7,
+    grid=major, grid style={gray!25},
+    legend pos=north east, legend cell align=left,
+    legend style={font=\footnotesize},
+    tick label style={font=\footnotesize},
+    label style={font=\small},
+    /pgf/number format/use comma,
+    /pgf/number format/1000 sep={.},
+]
+\addplot[domain=400:2400, samples=120, thick, blue] {100*1.959964*sqrt(0.25/x)};
+\addlegendentry{AAS (deff = 1)}
+\addplot[domain=400:2400, samples=120, thick, dashed, orange] {100*1.959964*sqrt(1.5*0.25/x)};
+\addlegendentry{deff = 1,5}
+\addplot[domain=400:2400, samples=120, thick, dotted, red] {100*1.959964*sqrt(2*0.25/x)};
+\addlegendentry{deff = 2,0}
+\addplot[only marks, mark=*, mark size=2.5pt, blue] coordinates {(793,3.48) (1040,3.04) (2007,2.19)};
+\addlegendentry{Calculada (AAS)}
+\addplot[only marks, mark=square*, mark size=2.5pt, black] coordinates {(793,3.0) (2007,2.0)};
+\addlegendentry{Divulgada}
+\node[font=\scriptsize, anchor=south west] at (axis cs:800,3.5) {módulo (793)};
+\node[font=\scriptsize, anchor=south west] at (axis cs:1045,3.06) {mulheres (1.040)};
+\node[font=\scriptsize, anchor=south] at (axis cs:2007,2.25) {total (2.007)};
+\end{axis}
+\end{tikzpicture}
+\fonte{\fontedados}
+\end{figure}
+
+O tamanho da amostra também limita a leitura de subgrupos. O sumário executivo apresenta prevalências por faixa etária e por cor, como 43,6\% entre mulheres de 25 a 34 anos (O POVO, 2025) e 41,5\% entre mulheres pretas contra 35,4\% entre brancas (FBSP, 2025), sem informar quantas respondentes há em cada grupo. Um subgrupo com 160 respondentes, cerca de um quinto do módulo, teria margem de $\pm$7,7 pp na AAS. Diferenças de 6 pp entre grupos, como a observada por cor, podem não ser estatisticamente significativas, e o leitor não tem como verificar.
+
+\subsection{Reconstrução das projeções populacionais}
+\label{sec:projecoes}
+
+O sumário executivo converte cada prevalência em número de mulheres e informa que as projeções ``consideram o valor mínimo da margem de erro'' (FBSP, 2025). Ou seja, a projeção é o limite inferior do intervalo de confiança multiplicado pela população: $(\hat{p} - e) \times N$. Como nem $e$ nem $N$ são informados, o grupo testou duas hipóteses, isolando $N$ em cada projeção: (a) a margem fixa de 3,0 pp declarada para o módulo; (b) a margem específica de cada proporção, calculada pela Equação~\eqref{eq:margem} com $n = 793$ e 95\% de confiança. Se a hipótese estiver certa, $N$ deve ser o mesmo para todos os indicadores.
+
+\begin{table}[H]
+\centering
+\caption{População implícita nas projeções sob duas hipóteses sobre a margem}
+\label{tab:projecoes}
+\small
+\begin{tabular}{lrrcc}
+\toprule
+& & & \multicolumn{2}{c}{\textbf{$N$ implícito (milhões)}} \\
+\cmidrule(lr){4-5}
+\textbf{Indicador} & \textbf{$\hat{p}$ (\%)} & \textbf{Projeção} & \textbf{\makecell{(a) margem\\fixa 3,0 pp}} & \textbf{\makecell{(b) margem de\\cada $\hat{p}$, $n$ = 793}} \\
+\midrule
+Qualquer violência & 37,5 & 21.458.206 & 62,2 & 62,9 \\
+Ofensa verbal & 31,4 & 17.714.721 & 62,4 & 62,9 \\
+Batida, empurrão ou chute & 16,9 & 8.979.053 & 64,6 & 62,8 \\
+Perseguição & 16,1 & 8.517.096 & 65,0 & 62,9 \\
+Ofensa sexual & 10,7 & 5.381.783 & 69,9 & 63,0 \\
+Esfaqueamento ou tiro & 1,4 & 350.854 & impossível & 60,3 \\
+Qualquer assédio & 49,6 & 29.010.850 & 62,3 & 62,9 \\
+\bottomrule
+\end{tabular}
+\fonte{\fontedados}
+\end{table}
+
+A Tabela~\ref{tab:projecoes} resolve a questão. Com a margem fixa de 3,0 pp, a população implícita varia de 62,2 a 69,9 milhões, e o indicador de 1,4\% seria impossível, porque $1{,}4\% - 3{,}0\%$ é negativo e não poderia gerar 350 mil mulheres. Com a margem específica de cada proporção, todos os indicadores convergem para cerca de \textbf{62,9 milhões de mulheres}; o único desvio (60,3 milhões para 1,4\%) se explica pelo arredondamento do percentual a uma casa decimal, que pesa mais em proporções pequenas.
+
+Conclui-se que as projeções foram calculadas com a fórmula da AAS, \textbf{95\% de confiança} e $n = 793$, ou seja, com a margem correta do módulo. Esse resultado tem dois lados. Por um lado, o procedimento é conservador e tecnicamente adequado: usar o limite inferior evita superestimar o número de vítimas. Por outro, revela uma incoerência interna: a margem efetivamente usada nos cálculos chega a 3,48 pp em $p = 0{,}5$ e a 3,37 pp em $p = 0{,}375$, e não aos 3,0 pp declarados. Além disso, a base de 62,9 milhões de mulheres não é informada nem tem fonte citada, o que impede o leitor de verificar as projeções.
+
+\subsection{Não resposta ao módulo de autopreenchimento}
+
+Das 1.040 mulheres entrevistadas em 2025, 247 (23,8\%) não responderam ao módulo de vitimização; em 2023, foram 224 de 1.042 (21,5\%). A ficha técnica não informa o perfil das não respondentes nem se houve ajuste para a não resposta. Como a prevalência foi calculada apenas entre as respondentes, a estimativa supõe implicitamente que as não respondentes têm a mesma prevalência.
+
+Sem dados sobre elas, o efeito pode ser limitado no pior caso: se nenhuma das 247 tivesse sofrido violência, a prevalência entre as 1.040 seria de 28,6\%; se todas tivessem, seria de 52,3\%. Os limites são amplos de propósito, pois mostram o que os dados permitem afirmar sem nenhuma suposição. Cenários intermediários são mais plausíveis: se a prevalência entre as não respondentes for metade da observada, a taxa total cai para 33,0\%; se for 50\% maior, sobe para 42,0\%. A Figura~\ref{fig:intervalos} compara essas faixas.
+
+\begin{figure}[H]
+\centering
+\caption{Prevalência de violência em 2025 (37,5\%) sob diferentes fontes de incerteza}
+\label{fig:intervalos}
+\begin{tikzpicture}
+\begin{axis}[
+    scale only axis, width=0.5\textwidth, height=4.6cm,
+    xlabel={Prevalência de violência nos últimos 12 meses (\%)},
+    xmin=25, xmax=55, ymin=0.4, ymax=4.6,
+    ytick={1,2,3,4},
+    yticklabels={{Limites de pior caso (não resposta)}, {Não respondentes a 0,5$\times$ e 1,5$\times$}, {IC 95\% com deff = 2,0}, {IC 95\% da AAS ($n$ = 793)}},
+    yticklabel style={font=\footnotesize},
+    tick label style={font=\footnotesize},
+    label style={font=\small},
+    grid=major, grid style={gray!25},
+    /pgf/number format/use comma,
+]
+\addplot[only marks, mark=*, mark size=2.5pt, blue,
+    error bars/.cd, x dir=both, x explicit, error bar style={thick, blue}]
+coordinates {
+    (37.5,4) +- (3.37,0)
+    (37.5,3) +- (4.77,0)
+    (37.5,2) += (4.5,0) -= (4.5,0)
+    (37.5,1) += (14.8,0) -= (8.9,0)
+};
+\draw[dashed, gray] (axis cs:37.5,0.4) -- (axis cs:37.5,4.6);
+\end{axis}
+\end{tikzpicture}
+\fonte{\fontedados}
+\end{figure}
+
+A faixa ligada à não resposta é maior que a margem de erro amostral, mesmo no cenário moderado. Há razões para supor que a não resposta não é aleatória: a recusa pode estar associada a ter vivido uma situação de violência e não querer falar sobre ela, à presença do agressor por perto ou à dificuldade de ler e operar o \textit{tablet}, o que afeta mais as mulheres com menor escolaridade, grupo em que a pesquisa registra maior incidência de agressões físicas graves (FBSP, 2025). O sentido do viés, portanto, é incerto, e essa incerteza não aparece na margem de $\pm$3,0 pp.
+
+\subsection{Comparabilidade da série histórica}
+
+O aumento de 28,9\% em 2023 para 37,5\% em 2025 foi o principal destaque da divulgação. A Figura~\ref{fig:serie} mostra a série desde 2017.
+
+\begin{figure}[H]
+\centering
+\caption{Mulheres que sofreram algum tipo de violência nos últimos 12 meses (\%), 2017--2025}
+\label{fig:serie}
+\begin{tikzpicture}
+\begin{axis}[
+    width=0.85\textwidth, height=6.5cm,
+    xlabel={Edição da pesquisa}, ylabel={Prevalência (\%)},
+    xmin=2016, xmax=2026, ymin=15, ymax=45,
+    xtick={2017,2019,2021,2023,2025},
+    x tick label style={/pgf/number format/1000 sep=},
+    grid=major, grid style={gray!25},
+    tick label style={font=\footnotesize},
+    label style={font=\small},
+    nodes near coords, nodes near coords style={font=\scriptsize, anchor=west, xshift=3pt},
+    point meta=explicit symbolic,
+]
+\addplot[thick, blue, mark=*,
+    error bars/.cd, y dir=both, y explicit]
+coordinates {
+    (2017,28.6) +- (0,0) [28,6]
+    (2019,27.4) +- (0,0) [27,4]
+    (2021,24.4) +- (0,0) [24,4]
+    (2023,28.9) +- (0,3.11) [28,9]
+    (2025,37.5) +- (0,3.37) [37,5]
+};
+\end{axis}
+\end{tikzpicture}
+\fonte{elaborada pelos autores com dados de FBSP (2023; 2025). As barras em 2023 e 2025 indicam o IC de 95\% da AAS, calculado com $n$ = 818 e $n$ = 793; o sumário não informa o tamanho do módulo nas edições anteriores.}
+\end{figure}
+
+Aplicando a Equação~\eqref{eq:dif} com $n_1 = 818$ e $n_2 = 793$, a diferença de 8,6 pp gera $z = 3{,}68$, com intervalo de confiança de 4,0 a 13,2 pp. Mesmo com um deff de 2,0, $z = 2{,}60$ e o intervalo vai de 2,1 a 15,1 pp. O aumento é, portanto, estatisticamente significativo mesmo sob uma hipótese conservadora sobre o desenho.
+
+A significância estatística, porém, só indica que a diferença dificilmente se deve ao acaso da amostra; ela não garante que a diferença seja real se algo no método mudou. Os elementos disponíveis indicam boa comparabilidade: mesmo instituto, mesmo número de municípios, tamanhos de amostra quase iguais e taxas de resposta próximas (78,5\% e 76,2\%). Uma diferença é o mês de campo (janeiro em 2023, fevereiro em 2025), que desloca o período de referência de 12 meses. A própria FBSP afirmou ser ``difícil precisar as razões'' do aumento (O POVO, 2025); do ponto de vista amostral, a conclusão do grupo é que o aumento é robusto ao erro amostral, mas sua magnitude exata deve ser lida com cautela por causa da não resposta e dos vieses de seleção, que podem variar entre edições.
+
+\subsection{Formas de abordagem: estimulada e não estimulada}
+
+A pesquisa combina três escolhas de abordagem, cada uma com efeitos sobre os resultados:
+
+\begin{itemize}
+    \item \textbf{Abordagem pessoal em pontos de fluxo.} É mais barata e rápida que a entrevista domiciliar, mas, como discutido, deixa de fora quem circula menos. Uma entrevista domiciliar teria a vantagem adicional de alcançar as mulheres em casa, onde a maior parte da violência ocorre, embora com o risco de o agressor estar presente.
+    \item \textbf{Autopreenchimento em \textit{tablet}.} É o principal acerto metodológico da pesquisa. Responder sem falar em voz alta ao entrevistador reduz o constrangimento e a desejabilidade social, que levam a omitir episódios de violência (TOURANGEAU; YAN, 2007). Em contrapartida, exige leitura e familiaridade com o aparelho, o que pode explicar parte da não resposta.
+    \item \textbf{Perguntas estimuladas.} As perguntas de vitimização apresentam uma lista de situações concretas (ofensa verbal, empurrão, ameaça, perseguição, entre outras), e a pergunta sobre situações presenciadas no bairro é identificada no próprio sumário como ``resposta estimulada e múltipla'' (FBSP, 2025). Para esse tema, a abordagem estimulada é adequada: muitas mulheres não classificam espontaneamente uma ofensa verbal ou um controle excessivo como violência, e uma pergunta aberta (``você sofreu violência?'') subestimaria a prevalência. A lista padroniza o que se mede e permite comparar edições. O custo é que os resultados dependem da redação e da ordem dos itens, que o sumário não reproduz, e que, sendo a resposta múltipla, os percentuais por tipo não somam 100\% (em média, cada vítima relatou 3,2 formas de violência).
+\end{itemize}
+
+\subsection{Confiabilidade dos resultados}
+
+A Tabela~\ref{tab:sintese} resume a avaliação do grupo.
+
+\begin{table}[H]
+\centering
+\caption{Síntese da avaliação metodológica}
+\label{tab:sintese}
+\small
+\begin{tabularx}{\textwidth}{XX}
+\toprule
+\textbf{Pontos fortes} & \textbf{Limitações} \\
+\midrule
+Sorteio de municípios e pontos de abordagem em 126 municípios de todas as regiões. & Seleção final por cotas: probabilidade de seleção desconhecida. \\
+\addlinespace
+Autopreenchimento em \textit{tablet} para as perguntas sensíveis. & Margem do módulo divulgada como 3,0 pp, contra 3,48 pp calculados para $n = 793$. \\
+\addlinespace
+Perguntas estimuladas com situações concretas, adequadas ao tema. & Nível de confiança, deff e base populacional não informados. \\
+\addlinespace
+Projeções conservadoras, pelo limite inferior do IC. & Não resposta de 23,8\% sem análise nem ajuste. \\
+\addlinespace
+Série bienal com método estável desde 2017. & Cobertura limitada de mulheres que circulam pouco, possivelmente as mais vulneráveis. \\
+\addlinespace
+Aumento de 2023 para 2025 significativo mesmo com deff = 2. & Sem tamanho de amostra por subgrupo e sem leitura estadual. \\
+\bottomrule
+\end{tabularx}
+\fonte{elaborada pelos autores.}
+\end{table}
+
+A conclusão é que os resultados são \textbf{confiáveis na ordem de grandeza e na tendência}, mas menos precisos do que a ficha técnica sugere. É seguro afirmar que mais de um terço das brasileiras relatou violência no período e que a prevalência aumentou em relação a 2023. Afirmações sobre o número exato de vítimas ou sobre diferenças pequenas entre subgrupos exigem cautela, porque a incerteza real combina o erro amostral do módulo (maior que o divulgado), o efeito dos conglomerados e um viés de não resposta de sentido desconhecido.
+
+\subsection{Sugestões de melhorias metodológicas}
+
+\begin{enumerate}
+    \item \textbf{Ficha técnica completa:} informar nível de confiança, deff estimado, base populacional das projeções, procedimento de ponderação e margem de erro de cada subgrupo apresentado.
+    \item \textbf{Margem por indicador:} divulgar o intervalo de confiança de cada prevalência, que o próprio cálculo das projeções já produz.
+    \item \textbf{Tratamento da não resposta:} comparar o perfil das 247 não respondentes com o das respondentes (idade, escolaridade, região, presentes no questionário geral) e ajustar os pesos com base nessas variáveis.
+    \item \textbf{Amostra domiciliar probabilística} em edições periódicas, como calibração da pesquisa por pontos de fluxo, para medir o viés de cobertura.
+    \item \textbf{Microdados públicos} anonimizados, permitindo que a academia reproduza as estimativas.
+\end{enumerate}
+
+\textbf{Proposta para uma leitura do Ceará.} O Ceará tem 4,3\% da população do país, o que corresponde a cerca de 34 das 793 respondentes do módulo: a amostra nacional não permite estimativas para o estado. Para estimar a prevalência no Ceará com margem de $\pm$5 pp e 95\% de confiança, a Equação~\eqref{eq:tamanho} com $p = 0{,}5$ resulta em 385 respondentes. Considerando um deff de 1,5 para a amostragem por conglomerados, o tamanho sobe para 577, e, com a taxa de resposta de 76,2\% observada no módulo, seria preciso abordar 757 mulheres. A Tabela~\ref{tab:ceara} mostra a alocação proporcional em três estratos, usando a população do Censo 2022 como proxy.
+
+\begin{table}[H]
+\centering
+\caption{Proposta de amostra estratificada para o Ceará ($\pm$5 pp, 95\%, deff = 1,5)}
+\label{tab:ceara}
+\small
+\begin{tabular}{lrrrc}
+\toprule
+\textbf{Estrato} & \textbf{\makecell{População\\(Censo 2022)}} & \textbf{\%} & \textbf{\makecell{Entrevistas\\(alocação\\proporcional)}} & \textbf{\makecell{Margem no\\estrato (pp)}} \\
+\midrule
+Fortaleza & 2.428.708 & 27,6 & 159 & $\pm$9,5 \\
+Demais municípios da RMF & 1.477.183 & 16,8 & 97 & $\pm$12,2 \\
+Interior & 4.889.066 & 55,6 & 321 & $\pm$6,7 \\
+\midrule
+\textbf{Ceará} & \textbf{8.794.957} & \textbf{100,0} & \textbf{577} & \textbf{$\pm$5,0} \\
+\bottomrule
+\end{tabular}
+\fonte{elaborada pelos autores com dados do IBGE (Censo Demográfico 2022).}
+\end{table}
+
+A alocação proporcional garante a margem de $\pm$5 pp para o estado, mas não para cada estrato. Se o objetivo fosse comparar Fortaleza, a Região Metropolitana e o interior, cada estrato precisaria de cerca de 577 respondentes, totalizando 1.731. Em qualquer dos casos, a seleção final deveria ser probabilística, por exemplo com sorteio de domicílios em setores censitários e de uma moradora por domicílio, mantendo o autopreenchimento para as perguntas sensíveis.
+
+\newpage
+
+\section{Considerações Finais}
+
+\textbf{Importância da amostragem.} A análise mostrou que um único número, como ``37,5\% das brasileiras sofreram violência'', resulta de uma sequência de escolhas: quem pode ser selecionado, como é selecionado, quem aceita responder, que perguntas são feitas e como a proporção é convertida em milhões de pessoas. Cada escolha afeta o resultado, e a margem de erro divulgada cobre apenas uma delas.
+
+\textbf{Impactos das escolhas metodológicas.} A pesquisa \textit{Visível e Invisível} acerta em pontos importantes, sobretudo no autopreenchimento e nas perguntas estimuladas, que tornam visível uma violência que os registros oficiais não mostram. Suas principais fragilidades estão na seleção final por cotas, na não resposta de quase um quarto das mulheres e na comunicação incompleta da incerteza. A reconstrução das projeções mostrou que a FBSP usou internamente a margem correta para 793 respondentes e 95\% de confiança, mas divulga uma margem menor e não informa a base populacional. Os resultados são sólidos para afirmar a ordem de grandeza e o aumento recente da violência, e frágeis para números exatos e comparações entre subgrupos.
+
+\textbf{Aprendizados.} O principal aprendizado do grupo foi que a margem de erro não é uma medida completa da qualidade de uma pesquisa. Ela mede apenas o erro amostral, sob a hipótese de seleção aleatória; vieses de cobertura e de não resposta podem ser maiores e não diminuem com o tamanho da amostra. Também ficou claro que é possível auditar uma pesquisa com poucos dados públicos: as fórmulas da disciplina, aplicadas com cuidado, permitiram inferir o nível de confiança e a base populacional que a ficha técnica omitia. Por fim, o trabalho mostrou como uma pergunta de pesquisa local, a violência contra a mulher no Ceará, depende de decisões de planejamento amostral que precisam ser tomadas antes da coleta.
+
+\newpage
+
+\section{Referências Bibliográficas}
+
+\begin{description}
+\item ACESSA; FOLHAPRESS. INTRIERI, L. \textbf{Como o Datafolha faz suas pesquisas eleitorais}. Juiz de Fora, 7 mar. 2026. Disponível em: \url{https://www.acessa.com/politica/2026/03/314023-como-o-datafolha-faz-suas-pesquisas-eleitorais.html}. Acesso em: 22 nov. 2026.
+
+\item BOLFARINE, H.; BUSSAB, W. O. \textbf{Elementos de amostragem}. São Paulo: Blucher, 2005.
+
+\item BUSSAB, W. O.; MORETTIN, P. A. \textbf{Estatística básica}. 9. ed. São Paulo: Saraiva, 2017.
+
+\item CEARÁ. Secretaria da Segurança Pública e Defesa Social. \textbf{Estatísticas: dados detalhados --- indicadores detalhados 2009 a 2025}. Fortaleza, 2026. Disponível em: \url{https://www.ce.gov.br/sspds/estatisticas/dados-detalhados/}. Acesso em: 07 set. 2026.
+
+\item COCHRAN, W. G. \textbf{Sampling techniques}. 3. ed. New York: Wiley, 1977.
+
+\item DIÁRIO DO NORDESTE. \textbf{A cada dia, em média, 68 mulheres denunciaram ser vítimas de violência doméstica no Ceará em 2025}. Fortaleza, 22 abr. 2025. Disponível em: \url{https://diariodonordeste.verdesmares.com.br/seguranca/a-cada-dia-em-media-68-mulheres-denunciaram-ser-vitimas-de-violencia-domestica-no-ceara-em-2025-1.3641126}. Acesso em: 22 nov. 2026.
+
+\item FÓRUM BRASILEIRO DE SEGURANÇA PÚBLICA (FBSP). \textbf{Visível e Invisível: a vitimização de mulheres no Brasil}. 4. ed. Infográfico. São Paulo: FBSP; Datafolha, 2023. Disponível em: \url{https://forumseguranca.org.br/wp-content/uploads/2023/03/visiveleinvisivel-2023-infografico.pdf}. Acesso em: 22 nov. 2026.
+
+\item FÓRUM BRASILEIRO DE SEGURANÇA PÚBLICA (FBSP). \textbf{Visível e Invisível: a vitimização de mulheres no Brasil}. 5. ed. Sumário executivo. São Paulo: FBSP; Datafolha, 2025. Disponível em: \url{https://forumseguranca.org.br/wp-content/uploads/2025/03/sumario-executivo-visivel-e-invisivel-5ed-2025.pdf}. Acesso em: 22 nov. 2026.
+
+\item GROVES, R. M. \textit{et al.} \textbf{Survey methodology}. 2. ed. Hoboken: Wiley, 2009.
+
+\item IBGE. \textbf{Censo Demográfico 2022}: população residente (Tabela 4714). Rio de Janeiro: IBGE, 2023. Disponível em: \url{https://sidra.ibge.gov.br/tabela/4714}. Acesso em: 26 out. 2026.
+
+\item KISH, L. \textbf{Survey sampling}. New York: Wiley, 1965.
+
+\item O POVO. \textbf{37,5\% das mulheres no País dizem ter sofrido violência em um ano}. Fortaleza, 11 mar. 2025. Disponível em: \url{https://mais.opovo.com.br/jornal/farol/2025/03/11/375-das-mulheres-no-pais-dizem-ter-sofrido-violencia-em-um-ano.html}. Acesso em: 22 nov. 2026.
+
+\item O POVO. \textbf{Ceará registra o maior índice de violência contra a mulher dos últimos cinco anos}. Fortaleza, 14 mar. 2025b. Disponível em: \url{https://mais.opovo.com.br/jornal/cidades/2025/03/14/ceara-registra-o-maior-indice-de-violencia-contra-a-mulher-dos-ultimos-cinco-anos.html}. Acesso em: 22 nov. 2026.
+
+\item TOURANGEAU, R.; YAN, T. Sensitive questions in surveys. \textbf{Psychological Bulletin}, v. 133, n. 5, p. 859--883, 2007.
+\end{description}
+
+\newpage
+
+\section{Anexos}
+
+Os scripts abaixo reproduzem todos os cálculos deste relatório. Para executá-los, basta Python 3 (sem bibliotecas externas); os testes usam \texttt{pytest}.
+
+\subsection*{Anexo A --- Cálculos de amostragem (\texttt{calculo\_amostra.py})}
+\addcontentsline{toc}{subsection}{Anexo A --- calculo\_amostra.py}
+\lstinputlisting[style=python]{calculo_amostra.py}
+
+\subsection*{Anexo B --- Testes automatizados (\texttt{test\_calculo\_amostra.py})}
+\addcontentsline{toc}{subsection}{Anexo B --- test\_calculo\_amostra.py}
+\lstinputlisting[style=python]{test_calculo_amostra.py}
+
+\end{document}
